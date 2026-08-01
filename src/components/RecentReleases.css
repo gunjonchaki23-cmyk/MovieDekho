@@ -1,0 +1,15 @@
+.recent-section {
+  margin-bottom: 4rem;
+}
+
+.recent-loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+}
+
+.recent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 2rem;
+}

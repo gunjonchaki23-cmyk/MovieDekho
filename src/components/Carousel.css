@@ -1,0 +1,101 @@
+.carousel-section {
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.section-title {
+  font-size: 1.4vw;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #e5e5e5;
+  padding: 0 4%;
+}
+
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 1.2rem;
+  }
+}
+
+.carousel-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.carousel-scroll {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 1rem 4%;
+  width: 100%;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.carousel-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-item {
+  flex: 0 0 16.66666667%; /* 6 items per row */
+  transition: transform 0.3s ease;
+}
+
+@media (max-width: 1200px) {
+  .carousel-item {
+    flex: 0 0 20%; /* 5 items */
+  }
+}
+
+@media (max-width: 900px) {
+  .carousel-item {
+    flex: 0 0 25%; /* 4 items */
+  }
+}
+
+@media (max-width: 600px) {
+  .carousel-item {
+    flex: 0 0 33.333333%; /* 3 items */
+  }
+}
+
+.carousel-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Add hover effect context */
+.carousel-scroll:hover .carousel-item {
+  /* When hovering over the row, we could push other items out of the way, but a simple scale with z-index is fine for now */
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0.8;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 900px) {
+  .carousel-slide {
+    flex: 0 0 calc((100% - 1.5rem) / 2); /* 2 items on tablet */
+  }
+}
+
+@media (max-width: 600px) {
+  .carousel-slide {
+    flex: 0 0 100%; /* 1 item on mobile */
+  }
+}
