@@ -53,11 +53,25 @@
     </div>
     <style>
       @media (max-width: 1200px) {
-        .side-referral-ad {
+        .side-referral-ad, .side-ad-left {
           display: none !important;
         }
       }
     </style>
+
+    <!-- Left Side Ad (160x300) -->
+    <div style="position: fixed; left: 20px; top: 50%; transform: translateY(-50%); z-index: 9999;" class="side-ad-left">
+      <script>
+        atOptions = {
+          'key' : '1ae8012e256fa64409e23dff33227a46',
+          'format' : 'iframe',
+          'height' : 300,
+          'width' : 160,
+          'params' : {}
+        };
+      </script>
+      <script src="https://publishedelegance.com/1ae8012e256fa64409e23dff33227a46/invoke.js"></script>
+    </div>
 
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
