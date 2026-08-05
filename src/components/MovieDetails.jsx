@@ -230,7 +230,7 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
               <X size={24} />
             </button>
             <iframe 
-              src={`https://vidsrc.me/embed/${movie.Type === 'series' ? 'tv' : 'movie'}?tmdb=${movie.imdbID}`}
+              src={`https://vidlink.pro/${movie.Type === 'series' ? 'tv' : 'movie'}/${movie.imdbID}?primaryColor=e50914&secondaryColor=141414&iconColor=e50914`}
               allowFullScreen
               frameBorder="0"
               className="stream-iframe"
