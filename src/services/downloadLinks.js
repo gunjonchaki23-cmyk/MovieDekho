@@ -8,7 +8,7 @@ export const fetchDownloadLinks = async () => {
   if (cachedLinks) return cachedLinks;
 
   try {
-    const response = await fetch(CSV_URL);
+    const response = await fetch(CSV_URL, { cache: 'no-store' });
     const csvText = await response.text();
     
     return new Promise((resolve) => {
