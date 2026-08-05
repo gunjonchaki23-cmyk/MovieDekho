@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Play, Download, Star, Clock, Calendar, Heart, AlertCircle } from 'lucide-react';
 import { getMovieDetails, getSimilarMovies } from '../services/api';
-import { downloadLinks } from '../services/downloadLinks';
+import { getDownloadLink } from '../services/downloadLinks';
 import MovieCard from './MovieCard';
 import DownloadGateway from './DownloadGateway';
 import './MovieDetails.css';
@@ -13,6 +13,7 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   const [showSoonMsg, setShowSoonMsg] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
   const [showGateway, setShowGateway] = useState(false);
+  const [currentDownloadUrl, setCurrentDownloadUrl] = useState('');
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -38,9 +39,10 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
     }
   };
 
-  const handleDownload = () => {
-    const link = downloadLinks[movie.imdbID];
+  const handleDownload = async () => {
+    const link = await getDownloadLink(movie.imdbID);
     if (link) {
+      setCurrentDownloadUrl(link);
       setShowGateway(true);
     } else {
       setShowSoonMsg(true);
@@ -197,7 +199,7 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
 
       {showGateway && (
         <DownloadGateway 
-          downloadUrl={downloadLinks[movie.imdbID]}
+          downloadUrl={currentDownloadUrl}
           directAdUrl="https://www.effectivecpmnetwork.com/t246cvu7qg?key=ddc9740d3e2c86d6de790b91e79fddd3"
           onComplete={() => setShowGateway(false)}
         />

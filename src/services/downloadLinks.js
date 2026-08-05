@@ -1,20 +1,41 @@
-/**
- * Add your Google Drive links here.
- * The key should be the movie's IMDb ID (e.g., "tt15398776" for Oppenheimer)
- * 
- * Example:
- * export const downloadLinks = {
- *   "tt15398776": "https://drive.google.com/file/d/your-google-drive-id/view?usp=sharing",
- *   "tt0816692": "https://drive.google.com/..."
- * };
- */
-export const downloadLinks = {
-  // Pink (2016) - Amitabh Bachchan
-  "415358": "https://drive.google.com/file/d/1SPqaTX5CJRjxSpnmTr2qbuhiXhAIb2Ej/view?usp=drive_link",
-  
-  // Supergirl (2026)
-  "1081003": "https://drive.google.com/file/d/1Ds2iMRB16amTjx__xAy-yUh651Ht8Cma/view?usp=drive_link",
+import Papa from 'papaparse';
 
-  // The Odyssey (2026)
-  "1368337": "https://drive.google.com/file/d/1Kz0K-08yzeH0UUUnelE_tM-_v1BeOXUG/view?usp=drive_link"
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTvAmZ0RLeLOj0X9JFqea4a3ExekB0dtD5iBCb-XWD3jFQpGsxBMQ_xlqm_ttoHvJAXoR6yD8SPfXcx/pub?output=csv';
+
+let cachedLinks = null;
+
+export const fetchDownloadLinks = async () => {
+  if (cachedLinks) return cachedLinks;
+
+  try {
+    const response = await fetch(CSV_URL);
+    const csvText = await response.text();
+    
+    return new Promise((resolve) => {
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          const links = {};
+          results.data.forEach(row => {
+            const id = row['TMDB ID'];
+            const link = row['Google Drive Link'];
+            if (id && link && link.trim() !== '') {
+              links[id.toString()] = link.trim();
+            }
+          });
+          cachedLinks = links;
+          resolve(links);
+        }
+      });
+    });
+  } catch (err) {
+    console.error("Error fetching download links from Google Sheets:", err);
+    return {};
+  }
+};
+
+export const getDownloadLink = async (imdbID) => {
+  const ObjectLinks = await fetchDownloadLinks();
+  return ObjectLinks[imdbID];
 };
