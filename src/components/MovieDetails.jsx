@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { X, Play, Download, Star, Clock, Calendar, Heart, AlertCircle } from 'lucide-react';
+import { X, Play, Download, Star, Clock, Calendar, Heart, AlertCircle, Shield } from 'lucide-react';
 import { getMovieDetails, getSimilarMovies } from '../services/api';
 import { getDownloadLink } from '../services/downloadLinks';
 import MovieCard from './MovieCard';
 import DownloadGateway from './DownloadGateway';
 import './MovieDetails.css';
+
+// Replace this URL with your actual VPN affiliate link when ready
+const VPN_AFFILIATE_URL = "https://nordvpn.com";
 
 const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }) => {
   const [details, setDetails] = useState(null);
@@ -180,6 +183,27 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
                   <Heart size={20} fill={isSaved ? "currentColor" : "none"} /> 
                   {isSaved ? 'Saved' : 'Save'}
                 </button>
+              </div>
+
+              {/* VPN Affiliate Promo Card */}
+              <div className="vpn-promo-card">
+                <div className="vpn-promo-content">
+                  <div className="vpn-icon-box">
+                    <Shield size={22} className="vpn-shield-icon" />
+                  </div>
+                  <div className="vpn-promo-text">
+                    <h4>নিরাপদে ও দ্রুত স্পিডে ডাউনলোড করুন</h4>
+                    <p>আইপি গোপন রেখে হাই-স্পিড সার্ভারে নিরাপদে মুভি পেতে ভিপিএন ব্যবহার করুন।</p>
+                  </div>
+                </div>
+                <a 
+                  href={VPN_AFFILIATE_URL} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="vpn-promo-btn"
+                >
+                  Get 70% Off VPN
+                </a>
               </div>
 
               {details.Ratings && details.Ratings.length > 0 && (
