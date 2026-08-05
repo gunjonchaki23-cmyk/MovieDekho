@@ -166,3 +166,24 @@ export const getKoreanDramasHindiDubbed = async (page = 1) => {
     return [];
   }
 };
+
+export const getMoviesByIds = async (ids) => {
+  if (!ids || ids.length === 0) return [];
+  try {
+    const promises = ids.map(async (id) => {
+      let response = await fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}`);
+      if (!response.ok) {
+        response = await fetch(`${BASE_URL}/tv/${id}?api_key=${API_KEY}`);
+      }
+      if (!response.ok) return null;
+      const data = await response.json();
+      return mapMovie(data);
+    });
+    
+    const results = await Promise.all(promises);
+    return results.filter(m => m !== null);
+  } catch (e) {
+    console.error("Error fetching available movies:", e);
+    return [];
+  }
+};

@@ -3,6 +3,7 @@ import Papa from 'papaparse';
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTvAmZ0RLeLOj0X9JFqea4a3ExekB0dtD5iBCb-XWD3jFQpGsxBMQ_xlqm_ttoHvJAXoR6yD8SPfXcx/pub?output=csv';
 
 let cachedLinks = null;
+let cachedIdsList = null;
 
 export const fetchDownloadLinks = async () => {
   if (cachedLinks) return cachedLinks;
@@ -17,14 +18,20 @@ export const fetchDownloadLinks = async () => {
         skipEmptyLines: true,
         complete: (results) => {
           const links = {};
+          const idsList = [];
           results.data.forEach(row => {
             const id = row['TMDB ID'];
             const link = row['Google Drive Link'];
             if (id && link && link.trim() !== '') {
-              links[id.toString()] = link.trim();
+              const strId = id.toString();
+              links[strId] = link.trim();
+              if (!idsList.includes(strId)) {
+                idsList.push(strId);
+              }
             }
           });
           cachedLinks = links;
+          cachedIdsList = idsList;
           resolve(links);
         }
       });
@@ -33,6 +40,13 @@ export const fetchDownloadLinks = async () => {
     console.error("Error fetching download links from Google Sheets:", err);
     return {};
   }
+};
+
+export const fetchAvailableMoviesList = async () => {
+  if (!cachedIdsList) {
+    await fetchDownloadLinks();
+  }
+  return cachedIdsList || [];
 };
 
 export const getDownloadLink = async (imdbID) => {

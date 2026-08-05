@@ -7,7 +7,8 @@ import EmptyState from './components/EmptyState';
 import Carousel from './components/Carousel';
 import GenreFilter from './components/GenreFilter';
 import Billboard from './components/Billboard';
-import { searchMovies, getTrendingMovies, getRecentMovies, getTrendingSeries, getMoviesByGenre, getBollywoodMovies, getHollywoodMovies, getKoreanDramasHindiDubbed } from './services/api';
+import { searchMovies, getTrendingMovies, getRecentMovies, getTrendingSeries, getMoviesByGenre, getBollywoodMovies, getHollywoodMovies, getKoreanDramasHindiDubbed, getMoviesByIds } from './services/api';
+import { fetchDownloadLinks, fetchAvailableMoviesList } from './services/downloadLinks';
 import './App.css';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
   const [bollywood, setBollywood] = useState([]);
   const [hollywood, setHollywood] = useState([]);
   const [koreanHindi, setKoreanHindi] = useState([]);
+  const [availableMovies, setAvailableMovies] = useState([]);
   
   const [activeGenre, setActiveGenre] = useState('');
   const [genreMovies, setGenreMovies] = useState([]);
@@ -62,12 +64,18 @@ function App() {
           getKoreanDramasHindiDubbed()
         ]);
         
+        // Fetch available movies from Google Sheet in reverse order (newest first)
+        const orderedIds = await fetchAvailableMoviesList();
+        const availableIds = [...orderedIds].reverse().slice(0, 20); // Top 20 latest added
+        const availableMoviesData = await getMoviesByIds(availableIds);
+        
         setTrending(trendingData);
         setTrendingSeries(seriesData);
         setRecent(recentData);
         setBollywood(bollyData);
         setHollywood(hollyData);
         setKoreanHindi(koreanData);
+        setAvailableMovies(availableMoviesData);
       } catch (error) {
         console.error("Error loading initial data:", error);
       } finally {
@@ -272,6 +280,15 @@ function App() {
                   <div className="loader" style={{ marginTop: '100px' }}>Loading movies...</div>
                 ) : (
                   <>
+                    {availableMovies.length > 0 && (
+                      <Carousel 
+                        title="Recently Added (Available to Download)" 
+                        movies={availableMovies} 
+                        onMovieSelect={setSelectedMovie} 
+                        watchlist={watchlist}
+                        onToggleSave={toggleWatchlist}
+                      />
+                    )}
                     <Carousel 
                       title="Trending Now" 
                       movies={trending.slice(5)} 
