@@ -200,7 +200,7 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
       {showGateway && (
         <DownloadGateway 
           downloadUrl={currentDownloadUrl}
-          directAdUrl="https://www.effectivecpmnetwork.com/t246cvu7qg?key=ddc9740d3e2c86d6de790b91e79fddd3"
+          directAdUrl="https://publishedelegance.com/k5q92rhdp?key=57570aa910e207f95d310978fcb9008d"
           onComplete={() => setShowGateway(false)}
         />
       )}
