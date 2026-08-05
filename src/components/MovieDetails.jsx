@@ -44,13 +44,31 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   };
 
   const handleDownload = async () => {
-    const link = await getDownloadLink(movie.imdbID);
+    const link = await getDownloadLink(movie.imdbID, movie.Type);
     if (link) {
       setCurrentDownloadUrl(link);
       setShowGateway(true);
     } else {
       setShowSoonMsg(true);
       setTimeout(() => setShowSoonMsg(false), 3000); // Reset after 3 seconds
+      
+      // Auto-request missing movie to Google Sheet
+      try {
+        const typeStr = movie.Type === 'series' ? 'TV Show' : 'Movie';
+        await fetch('https://script.google.com/macros/s/AKfycby_Q_USHrI6HUezBIfN_5IIdSnBCCR03YaNggsTzoRJepOL_mH3QTGCVN5DbLouYRSC/exec', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain', // Using text/plain avoids some CORS preflight issues for simple requests
+          },
+          body: JSON.stringify({
+            id: movie.imdbID,
+            type: typeStr,
+            title: movie.Title || movie.name
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to request movie:", err);
+      }
     }
   };
 
