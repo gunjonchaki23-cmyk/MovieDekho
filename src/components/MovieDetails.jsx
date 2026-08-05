@@ -12,6 +12,7 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   const [loading, setLoading] = useState(true);
   const [showSoonMsg, setShowSoonMsg] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [showStream, setShowStream] = useState(false);
   const [showGateway, setShowGateway] = useState(false);
   const [currentDownloadUrl, setCurrentDownloadUrl] = useState('');
 
@@ -160,8 +161,11 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
               </div>
 
               <div className="detail-actions">
-                <button className="btn btn-primary action-btn" onClick={handleWatch}>
-                  <Play size={20} /> {details.TrailerKey && showTrailer ? "Playing Trailer" : (details.TrailerKey ? "Watch Trailer" : "Watch Now")}
+                <button className="btn btn-primary action-btn stream-btn" onClick={() => setShowStream(true)}>
+                  <Play size={20} fill="currentColor" /> Stream Now
+                </button>
+                <button className="btn btn-outline action-btn" onClick={handleWatch}>
+                  <Play size={20} /> Trailer
                 </button>
                 <button 
                   className={`btn action-btn ${showSoonMsg ? 'btn-soon' : 'btn-outline'}`} 
@@ -218,6 +222,22 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
           </div>
         )}
       </div>
+
+      {showStream && (
+        <div className="stream-modal-overlay" onClick={() => setShowStream(false)}>
+          <div className="stream-modal-content" onClick={e => e.stopPropagation()}>
+            <button className="close-btn" style={{ top: '10px', right: '10px', background: 'rgba(0,0,0,0.5)', zIndex: 10001 }} onClick={() => setShowStream(false)}>
+              <X size={24} />
+            </button>
+            <iframe 
+              src={`https://vidsrc.me/embed/${movie.Type === 'series' ? 'tv' : 'movie'}?tmdb=${movie.imdbID}`}
+              allowFullScreen
+              frameBorder="0"
+              className="stream-iframe"
+            ></iframe>
+          </div>
+        </div>
+      )}
 
       {showGateway && (
         <DownloadGateway 
