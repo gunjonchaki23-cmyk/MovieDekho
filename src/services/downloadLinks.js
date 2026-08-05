@@ -18,20 +18,25 @@ export const fetchDownloadLinks = async () => {
         skipEmptyLines: true,
         complete: (results) => {
           const links = {};
-          const idsList = [];
+          const itemsList = [];
           results.data.forEach(row => {
             const id = row['TMDB ID'];
             const link = row['Google Drive Link'];
+            const rawType = row['Type'] || '';
+            const type = rawType.toLowerCase().includes('tv') ? 'tv' : 'movie';
+            
             if (id && link && link.trim() !== '') {
               const strId = id.toString();
-              links[strId] = link.trim();
-              if (!idsList.includes(strId)) {
-                idsList.push(strId);
+              links[`${type}_${strId}`] = link.trim(); // Prevent collision between movie and tv IDs
+              if (!links[strId]) links[strId] = link.trim(); // Fallback
+              
+              if (!itemsList.find(i => i.id === strId && i.type === type)) {
+                itemsList.push({ id: strId, type });
               }
             }
           });
           cachedLinks = links;
-          cachedIdsList = idsList;
+          cachedIdsList = itemsList;
           resolve(links);
         }
       });
@@ -49,7 +54,8 @@ export const fetchAvailableMoviesList = async () => {
   return cachedIdsList || [];
 };
 
-export const getDownloadLink = async (imdbID) => {
+export const getDownloadLink = async (imdbID, type = 'movie') => {
   const ObjectLinks = await fetchDownloadLinks();
-  return ObjectLinks[imdbID];
+  const tmdbType = type === 'series' ? 'tv' : 'movie';
+  return ObjectLinks[`${tmdbType}_${imdbID}`] || ObjectLinks[imdbID];
 };

@@ -18,9 +18,13 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   useEffect(() => {
     const fetchDetails = async () => {
       setLoading(true);
-      const data = await getMovieDetails(movie.imdbID);
+      const data = await getMovieDetails(movie.imdbID, movie.Type);
       setDetails(data);
       setLoading(false);
+      
+      // Fetch download URL if available
+      const url = await getDownloadLink(movie.imdbID, movie.Type);
+      setCurrentDownloadUrl(url);
       
       // Fetch similar movies as well in background
       const similarData = await getSimilarMovies(movie.imdbID);

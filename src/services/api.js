@@ -54,12 +54,13 @@ export const searchMovies = async (query, page = 1) => {
   }
 };
 
-export const getMovieDetails = async (id) => {
+export const getMovieDetails = async (id, type) => {
   try {
-    // We try movie first. If it fails, we try tv.
-    let response = await fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}&append_to_response=credits,videos`);
+    const endpoint = type === 'series' ? 'tv' : 'movie';
+    let response = await fetch(`${BASE_URL}/${endpoint}/${id}?api_key=${API_KEY}&append_to_response=credits,videos`);
     if (!response.ok) {
-      response = await fetch(`${BASE_URL}/tv/${id}?api_key=${API_KEY}&append_to_response=credits,videos`);
+      const altEndpoint = endpoint === 'movie' ? 'tv' : 'movie';
+      response = await fetch(`${BASE_URL}/${altEndpoint}/${id}?api_key=${API_KEY}&append_to_response=credits,videos`);
     }
     const data = await response.json();
     if (data.id) return mapDetails(data);
@@ -167,13 +168,14 @@ export const getKoreanDramasHindiDubbed = async (page = 1) => {
   }
 };
 
-export const getMoviesByIds = async (ids) => {
-  if (!ids || ids.length === 0) return [];
+export const getMoviesByIds = async (items) => {
+  if (!items || items.length === 0) return [];
   try {
-    const promises = ids.map(async (id) => {
-      let response = await fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}`);
+    const promises = items.map(async (item) => {
+      let response = await fetch(`${BASE_URL}/${item.type}/${item.id}?api_key=${API_KEY}`);
       if (!response.ok) {
-        response = await fetch(`${BASE_URL}/tv/${id}?api_key=${API_KEY}`);
+        const altEndpoint = item.type === 'movie' ? 'tv' : 'movie';
+        response = await fetch(`${BASE_URL}/${altEndpoint}/${item.id}?api_key=${API_KEY}`);
       }
       if (!response.ok) return null;
       const data = await response.json();
