@@ -1,6 +1,6 @@
 import Papa from 'papaparse';
 
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTvAmZ0RLeLOj0X9JFqea4a3ExekB0dtD5iBCb-XWD3jFQpGsxBMQ_xlqm_ttoHvJAXoR6yD8SPfXcx/pub?output=csv';
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/1Sz_eAzpxDgunz-vbLW4RDiHDqYgZ-8hOIo4qHveIjog/gviz/tq?tqx=out:csv';
 
 let cachedLinks = null;
 let cachedIdsList = null;
