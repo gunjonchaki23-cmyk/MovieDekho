@@ -3,6 +3,7 @@ import sys
 import json
 import glob
 import time
+import re
 import requests
 import subprocess
 from google.oauth2.service_account import Credentials
@@ -14,6 +15,7 @@ import gspread
 GDRIVE_CREDENTIALS_JSON = os.environ.get("GDRIVE_CREDENTIALS")
 GOOGLE_SHEET_ID = os.environ.get("GOOGLE_SHEET_ID")
 GDRIVE_FOLDER_ID = os.environ.get("GDRIVE_FOLDER_ID", "")
+TMDB_API_KEY = "84128f7311124fa4b04618e47614d97a"
 
 # Scopes for Google Drive & Sheets API
 SCOPES = [
@@ -34,31 +36,64 @@ def init_services():
     
     return drive_service, gc
 
-def search_yts_torrent(title, tmdb_id=""):
-    print(f"🔍 Searching torrent for: {title} (TMDB ID: {tmdb_id})")
-    
-    # Try searching YTS by title
-    search_url = f"https://yts.mx/api/v2/list_movies.json?query_term={title}&limit=5"
+def get_imdb_id_from_tmdb(tmdb_id, movie_type="movie"):
+    endpoint = "tv" if "tv" in movie_type.lower() else "movie"
+    url = f"https://api.themoviedb.org/3/{endpoint}/{tmdb_id}/external_ids?api_key={TMDB_API_KEY}"
     try:
-        res = requests.get(search_url, timeout=10)
-        data = res.json()
-        
-        if data.get('status') == 'ok' and data.get('data', {}).get('movie_count', 0) > 0:
-            movies = data['data']['movies']
-            for m in movies:
+        res = requests.get(url, timeout=5)
+        if res.status_code == 200:
+            return res.json().get("imdb_id")
+    except Exception as e:
+        print(f"⚠️ Could not fetch IMDB ID from TMDB: {e}")
+    return None
+
+def search_yts_torrent(title, tmdb_id="", movie_type="movie"):
+    print(f"🔍 Searching torrent for: '{title}' (TMDB ID: {tmdb_id})")
+    
+    # Strategy 1: Search YTS by IMDB ID (100% Exact Match)
+    imdb_id = get_imdb_id_from_tmdb(tmdb_id, movie_type) if tmdb_id else None
+    if imdb_id:
+        print(f"📌 Found IMDB ID: {imdb_id}. Querying YTS API...")
+        search_url = f"https://yts.mx/api/v2/list_movies.json?query_term={imdb_id}"
+        try:
+            res = requests.get(search_url, timeout=10)
+            data = res.json()
+            if data.get('status') == 'ok' and data.get('data', {}).get('movie_count', 0) > 0:
+                m = data['data']['movies'][0]
                 torrents = m.get('torrents', [])
                 if torrents:
-                    # Prefer 720p or 1080p web/bluray
                     selected = torrents[0]
                     for t in torrents:
                         if t.get('quality') in ['720p', '1080p']:
                             selected = t
                             break
-                    print(f"✅ Found YTS torrent: {m['title']} ({selected['quality']})")
+                    print(f"✅ Found YTS Torrent via IMDB ID: {m['title']} ({selected['quality']})")
+                    return selected['url'], f"{m['title']}_{selected['quality']}.mp4"
+        except Exception as e:
+            print(f"⚠️ YTS Search by IMDB ID failed: {e}")
+
+    # Strategy 2: Clean title search (remove colons, subtitles, special chars)
+    clean_title = re.sub(r'[^a-zA-Z0-9\s]', '', title).strip()
+    search_url = f"https://yts.mx/api/v2/list_movies.json?query_term={clean_title}&limit=5"
+    try:
+        res = requests.get(search_url, timeout=10)
+        data = res.json()
+        if data.get('status') == 'ok' and data.get('data', {}).get('movie_count', 0) > 0:
+            movies = data['data']['movies']
+            for m in movies:
+                torrents = m.get('torrents', [])
+                if torrents:
+                    selected = torrents[0]
+                    for t in torrents:
+                        if t.get('quality') in ['720p', '1080p']:
+                            selected = t
+                            break
+                    print(f"✅ Found YTS Torrent via Clean Title: {m['title']} ({selected['quality']})")
                     return selected['url'], f"{m['title']}_{selected['quality']}.mp4"
     except Exception as e:
-        print(f"⚠️ YTS Search failed: {e}")
+        print(f"⚠️ YTS Clean Title Search failed: {e}")
         
+    print(f"⏩ No torrent found on YTS for: {title}")
     return None, None
 
 def download_torrent(torrent_url):
@@ -90,7 +125,6 @@ def download_torrent(torrent_url):
         print("❌ No video files found in downloaded torrent.")
         return None
         
-    # Pick largest file
     largest_file = max(files, key=os.path.getsize)
     print(f"✅ Download complete: {os.path.basename(largest_file)} ({round(os.path.getsize(largest_file)/(1024*1024), 2)} MB)")
     return largest_file
@@ -141,9 +175,9 @@ def process_sheet_requests():
         print("ℹ️ No rows found in Google Sheet.")
         return
 
-    header = records[0]
-    print(f"📊 Sheet headers: {header}")
+    print(f"📊 Total Rows in Sheet: {len(records)}")
     
+    uploaded_count = 0
     # Process unfulfilled rows (where Column 1 has ID, Column 4 is empty)
     for idx, row in enumerate(records[1:], start=2):  # 1-indexed row number in gspread
         tmdb_id = row[0].strip() if len(row) > 0 else ""
@@ -152,11 +186,10 @@ def process_sheet_requests():
         drive_link = row[3].strip() if len(row) > 3 else ""
         
         if tmdb_id and not drive_link:
-            print(f"\n🎯 Processing Row {idx}: {title} (ID: {tmdb_id})")
+            print(f"\n🎯 Processing Row {idx}: {title} (ID: {tmdb_id}, Type: {movie_type})")
             
-            torrent_url, filename = search_yts_torrent(title, tmdb_id)
+            torrent_url, filename = search_yts_torrent(title, tmdb_id, movie_type)
             if not torrent_url:
-                print(f"⏩ Skipping {title}: No torrent found.")
                 continue
                 
             local_file = download_torrent(torrent_url)
@@ -167,7 +200,7 @@ def process_sheet_requests():
             
             # Update Column D (4th column) with Google Drive Link
             sheet.update_cell(idx, 4, gdrive_url)
-            print(f"🎉 Updated Sheet Row {idx} with link: {gdrive_url}")
+            print(f"🎉 Successfully updated Sheet Row {idx} with link: {gdrive_url}")
             
             # Clean up local file
             try:
@@ -175,8 +208,9 @@ def process_sheet_requests():
             except:
                 pass
                 
-            # Process 1 movie per run to avoid timeout limits
-            break
+            uploaded_count += 1
+            if uploaded_count >= 2:  # Process max 2 movies per run to stay well within GitHub limits
+                break
 
 if __name__ == "__main__":
     process_sheet_requests()
