@@ -47,13 +47,42 @@ def get_imdb_id_from_tmdb(tmdb_id, movie_type="movie"):
         print(f"⚠️ Could not fetch IMDB ID from TMDB: {e}")
     return None
 
+def search_eztv_torrent(imdb_id):
+    if not imdb_id:
+        return None, None
+    clean_imdb = imdb_id.replace("tt", "")
+    url = f"https://eztv.re/api/get-torrents?imdb_id={clean_imdb}&limit=5"
+    try:
+        res = requests.get(url, timeout=10)
+        data = res.json()
+        torrents = data.get('torrents', [])
+        if torrents:
+            t = torrents[0]
+            download_url = t.get('torrent_url') or t.get('magnet_url')
+            filename = f"{t.get('title', 'tv_show')}.torrent"
+            print(f"✅ Found EZTV Torrent: {t.get('title')}")
+            return download_url, filename
+    except Exception as e:
+        print(f"⚠️ EZTV search failed: {e}")
+    return None, None
+
 def search_yts_torrent(title, tmdb_id="", movie_type="movie"):
-    print(f"🔍 Searching torrent for: '{title}' (TMDB ID: {tmdb_id})")
+    print(f"\n🔍 Searching torrent for: '{title}' (TMDB ID: {tmdb_id}, Type: {movie_type})")
     
-    # Strategy 1: Search YTS by IMDB ID (100% Exact Match)
     imdb_id = get_imdb_id_from_tmdb(tmdb_id, movie_type) if tmdb_id else None
+    
+    # If TV Show, try EZTV first
+    if "tv" in movie_type.lower():
+        if imdb_id:
+            url, name = search_eztv_torrent(imdb_id)
+            if url:
+                return url, name
+        print(f"⏩ Skipping TV Show '{title}': Not found on TV trackers.")
+        return None, None
+
+    # Movie search strategy 1: IMDB ID on YTS
     if imdb_id:
-        print(f"📌 Found IMDB ID: {imdb_id}. Querying YTS API...")
+        print(f"📌 Found IMDB ID: {imdb_id}. Searching YTS...")
         search_url = f"https://yts.mx/api/v2/list_movies.json?query_term={imdb_id}"
         try:
             res = requests.get(search_url, timeout=10)
@@ -72,7 +101,7 @@ def search_yts_torrent(title, tmdb_id="", movie_type="movie"):
         except Exception as e:
             print(f"⚠️ YTS Search by IMDB ID failed: {e}")
 
-    # Strategy 2: Clean title search (remove colons, subtitles, special chars)
+    # Movie search strategy 2: Clean Title Search on YTS
     clean_title = re.sub(r'[^a-zA-Z0-9\s]', '', title).strip()
     search_url = f"https://yts.mx/api/v2/list_movies.json?query_term={clean_title}&limit=5"
     try:
@@ -93,11 +122,11 @@ def search_yts_torrent(title, tmdb_id="", movie_type="movie"):
     except Exception as e:
         print(f"⚠️ YTS Clean Title Search failed: {e}")
         
-    print(f"⏩ No torrent found on YTS for: {title}")
+    print(f"⏩ Skipping '{title}': Torrent not released yet or unavailable on YTS.")
     return None, None
 
 def download_torrent(torrent_url):
-    print("⏳ Starting torrent download with aria2c...")
+    print("⏳ Starting download with aria2c...")
     download_dir = "./downloads"
     os.makedirs(download_dir, exist_ok=True)
     
@@ -115,7 +144,6 @@ def download_torrent(torrent_url):
         print(f"❌ Download failed: {res.stderr}")
         return None
         
-    # Find largest video file in download_dir
     video_extensions = ('*.mp4', '*.mkv', '*.avi', '*.webm')
     files = []
     for ext in video_extensions:
@@ -178,16 +206,13 @@ def process_sheet_requests():
     print(f"📊 Total Rows in Sheet: {len(records)}")
     
     uploaded_count = 0
-    # Process unfulfilled rows (where Column 1 has ID, Column 4 is empty)
-    for idx, row in enumerate(records[1:], start=2):  # 1-indexed row number in gspread
+    for idx, row in enumerate(records[1:], start=2):
         tmdb_id = row[0].strip() if len(row) > 0 else ""
         movie_type = row[1].strip() if len(row) > 1 else "Movie"
         title = row[2].strip() if len(row) > 2 else ""
         drive_link = row[3].strip() if len(row) > 3 else ""
         
         if tmdb_id and not drive_link:
-            print(f"\n🎯 Processing Row {idx}: {title} (ID: {tmdb_id}, Type: {movie_type})")
-            
             torrent_url, filename = search_yts_torrent(title, tmdb_id, movie_type)
             if not torrent_url:
                 continue
@@ -202,14 +227,13 @@ def process_sheet_requests():
             sheet.update_cell(idx, 4, gdrive_url)
             print(f"🎉 Successfully updated Sheet Row {idx} with link: {gdrive_url}")
             
-            # Clean up local file
             try:
                 os.remove(local_file)
             except:
                 pass
                 
             uploaded_count += 1
-            if uploaded_count >= 2:  # Process max 2 movies per run to stay well within GitHub limits
+            if uploaded_count >= 2:
                 break
 
 if __name__ == "__main__":
