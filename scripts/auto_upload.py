@@ -15,9 +15,8 @@ import gspread
 GDRIVE_CREDENTIALS_JSON = os.environ.get("GDRIVE_CREDENTIALS")
 GOOGLE_SHEET_ID = os.environ.get("GOOGLE_SHEET_ID")
 GDRIVE_FOLDER_ID = os.environ.get("GDRIVE_FOLDER_ID", "")
-TMDB_API_KEY = "92b418e837b833be308bbfb1fb2aca1e"  # Valid working key
+TMDB_API_KEY = "92b418e837b833be308bbfb1fb2aca1e"
 
-# Scopes for Google Drive & Sheets API
 SCOPES = [
     'https://www.googleapis.com/auth/drive',
     'https://www.googleapis.com/auth/spreadsheets'
@@ -33,7 +32,7 @@ YTS_MIRRORS = [
 
 def init_services():
     if not GDRIVE_CREDENTIALS_JSON:
-        print("❌ Error: GDRIVE_CREDENTIALS environment variable is missing in GitHub Secrets.")
+        print("❌ Error: GDRIVE_CREDENTIALS environment variable is missing.")
         sys.exit(1)
         
     try:
@@ -47,7 +46,7 @@ def init_services():
         sys.exit(1)
 
 def get_imdb_id_from_tmdb(tmdb_id, movie_type="movie"):
-    endpoint = "tv" if "tv" in movie_type.lower() else "movie"
+    endpoint = "tv" if "tv" in str(movie_type).lower() else "movie"
     url = f"https://api.themoviedb.org/3/{endpoint}/{tmdb_id}/external_ids?api_key={TMDB_API_KEY}"
     try:
         res = requests.get(url, timeout=10)
@@ -84,8 +83,8 @@ def search_yts_torrent(title, tmdb_id="", movie_type="movie"):
     
     imdb_id = get_imdb_id_from_tmdb(tmdb_id, movie_type) if tmdb_id else None
     
-    # Handle TV Shows
-    if "tv" in movie_type.lower():
+    # TV Show Strategy
+    if "tv" in str(movie_type).lower():
         if imdb_id:
             url, name = search_eztv_torrent(imdb_id)
             if url:
@@ -93,7 +92,7 @@ def search_yts_torrent(title, tmdb_id="", movie_type="movie"):
         print(f"  ⏩ Skipping TV Show '{title}': Not found on EZTV.")
         return None, None
 
-    # Movie Strategy 1: Search YTS by IMDB ID
+    # Movie Strategy 1: IMDB ID on YTS
     if imdb_id:
         for mirror in YTS_MIRRORS:
             search_url = f"{mirror}/api/v2/list_movies.json?query_term={imdb_id}"
@@ -115,7 +114,7 @@ def search_yts_torrent(title, tmdb_id="", movie_type="movie"):
             except Exception as e:
                 continue
 
-    # Movie Strategy 2: Search YTS by Clean Title
+    # Movie Strategy 2: Clean Title Search
     clean_title = re.sub(r'[^a-zA-Z0-9\s]', '', title).strip()
     if clean_title:
         for mirror in YTS_MIRRORS:
@@ -151,7 +150,7 @@ def download_torrent(torrent_url):
         "aria2c",
         "--seed-time=0",
         "--max-download-limit=0",
-        "--summary-interval=5",
+        "--summary-interval=10",
         "-d", download_dir,
         torrent_url
     ]
@@ -182,21 +181,31 @@ def upload_to_gdrive(drive_service, file_path, folder_id=""):
     if folder_id:
         file_metadata['parents'] = [folder_id]
         
-    media = MediaFileUpload(file_path, resumable=True)
-    file = drive_service.files().create(
+    # Resumable upload with 10MB chunk size for stability
+    media = MediaFileUpload(file_path, chunksize=10*1024*1024, resumable=True)
+    request = drive_service.files().create(
         body=file_metadata,
         media_body=media,
         fields='id, webViewLink, webContentLink'
-    ).execute()
+    )
     
-    file_id = file.get('id')
-    print(f"  ✅ Uploaded. File ID: {file_id}")
+    response = None
+    while response is None:
+        status, response = request.next_chunk()
+        if status:
+            print(f"  ⏳ Upload Progress: {int(status.progress() * 100)}%")
+            
+    file_id = response.get('id')
+    print(f"  ✅ Uploaded to Google Drive. File ID: {file_id}")
     
-    # Make file public ("Anyone with link can view")
-    drive_service.permissions().create(
-        fileId=file_id,
-        body={'type': 'anyone', 'role': 'reader'}
-    ).execute()
+    # Try setting public permission
+    try:
+        drive_service.permissions().create(
+            fileId=file_id,
+            body={'type': 'anyone', 'role': 'reader'}
+        ).execute()
+    except Exception as perm_err:
+        print(f"  ⚠️ Warning setting permission: {perm_err}")
     
     direct_link = f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
     return direct_link
@@ -212,7 +221,7 @@ def process_sheet_requests():
         doc = gc.open_by_key(GOOGLE_SHEET_ID)
         sheet = doc.sheet1
     except Exception as e:
-        print(f"❌ Failed to open Google Sheet: {e}")
+        print(f"❌ Failed to open Google Sheet ID '{GOOGLE_SHEET_ID}': {e}")
         sys.exit(1)
         
     records = sheet.get_all_values()
@@ -223,9 +232,8 @@ def process_sheet_requests():
     print(f"📊 Total Rows in Sheet: {len(records)}")
     
     uploaded_count = 0
-    # Search backwards (from bottom/newest requests first!)
     all_rows = list(enumerate(records[1:], start=2))
-    all_rows.reverse()  # Process newest requested items FIRST!
+    all_rows.reverse()  # Newest requests first
     
     for idx, row in all_rows:
         tmdb_id = row[0].strip() if len(row) > 0 else ""
@@ -242,19 +250,27 @@ def process_sheet_requests():
             if not local_file:
                 continue
                 
-            gdrive_url = upload_to_gdrive(drive_service, local_file, GDRIVE_FOLDER_ID)
-            
-            # Update Column D (4th column) with Google Drive Link
-            sheet.update_cell(idx, 4, gdrive_url)
-            print(f"🎉 Successfully updated Sheet Row {idx} ({title}) with link: {gdrive_url}")
-            
             try:
-                os.remove(local_file)
-            except:
-                pass
+                gdrive_url = upload_to_gdrive(drive_service, local_file, GDRIVE_FOLDER_ID)
                 
-            uploaded_count += 1
-            if uploaded_count >= 2:
+                # Update Column D (4th column) safely
+                try:
+                    sheet.update_cell(idx, 4, gdrive_url)
+                except Exception:
+                    sheet.update(f"D{idx}", [[gdrive_url]])
+                    
+                print(f"🎉 Successfully updated Sheet Row {idx} ({title}) with link: {gdrive_url}")
+                uploaded_count += 1
+            except Exception as upload_err:
+                print(f"❌ Error during upload/sheet update: {upload_err}")
+            finally:
+                # Clean up downloaded file
+                try:
+                    os.remove(local_file)
+                except:
+                    pass
+                
+            if uploaded_count >= 1:
                 break
 
 if __name__ == "__main__":
