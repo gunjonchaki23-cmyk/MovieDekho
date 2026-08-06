@@ -1,0 +1,8 @@
+{
+  "appId": "com.moviedekho.app",
+  "appName": "MovieDekho",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

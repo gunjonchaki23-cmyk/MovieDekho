@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Play, Download, Star, Clock, Calendar, Heart, AlertCircle } from 'lucide-react';
+import { X, Play, Download, Star, Clock, Calendar, Heart, AlertCircle, Tv, Server } from 'lucide-react';
 import { getMovieDetails, getSimilarMovies } from '../services/api';
 import { getDownloadLink } from '../services/downloadLinks';
 import MovieCard from './MovieCard';
@@ -12,6 +12,8 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   const [loading, setLoading] = useState(true);
   const [showSoonMsg, setShowSoonMsg] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [showStream, setShowStream] = useState(false);
+  const [activeServer, setActiveServer] = useState('server1');
   const [showGateway, setShowGateway] = useState(false);
   const [currentDownloadUrl, setCurrentDownloadUrl] = useState('');
 
@@ -22,13 +24,10 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
       setDetails(data);
       setLoading(false);
       
-      // Fetch download URL if available
       const url = await getDownloadLink(movie.imdbID, movie.Type);
       setCurrentDownloadUrl(url);
       
-      // Fetch similar movies as well in background
       const similarData = await getSimilarMovies(movie.imdbID);
-      // Filter out the current movie just in case
       setSimilar(similarData.filter(m => m.imdbID !== movie.imdbID));
     };
     
@@ -50,25 +49,19 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
       setShowGateway(true);
     } else {
       setShowSoonMsg(true);
-      setTimeout(() => setShowSoonMsg(false), 3000); // Reset after 3 seconds
-      
-      // Auto-request missing movie to Google Sheet
-      try {
-        const typeStr = movie.Type === 'series' ? 'TV Show' : 'Movie';
-        await fetch('https://script.google.com/macros/s/AKfycby_Q_USHrI6HUezBIfN_5IIdSnBCCR03YaNggsTzoRJepOL_mH3QTGCVN5DbLouYRSC/exec', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'text/plain', // Using text/plain avoids some CORS preflight issues for simple requests
-          },
-          body: JSON.stringify({
-            id: movie.imdbID,
-            type: typeStr,
-            title: movie.Title || movie.name
-          }),
-        });
-      } catch (err) {
-        console.error("Failed to request movie:", err);
-      }
+      setTimeout(() => setShowSoonMsg(false), 3000);
+    }
+  };
+
+  const typeEndpoint = movie.Type === 'series' ? 'tv' : 'movie';
+  
+  const getServerUrl = () => {
+    if (activeServer === 'server1') {
+      return `https://vidlink.pro/${typeEndpoint}/${movie.imdbID}?primaryColor=e50914&secondaryColor=141414&iconColor=e50914`;
+    } else if (activeServer === 'server2') {
+      return `https://player.autoembed.cc/embed/${typeEndpoint}/${movie.imdbID}`;
+    } else {
+      return `https://vidsrc.me/embed/${typeEndpoint}?tmdb=${movie.imdbID}`;
     }
   };
 
@@ -160,8 +153,11 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
               </div>
 
               <div className="detail-actions">
-                <button className="btn btn-primary action-btn" onClick={handleWatch}>
-                  <Play size={20} /> {details.TrailerKey && showTrailer ? "Playing Trailer" : (details.TrailerKey ? "Watch Trailer" : "Watch Now")}
+                <button className="btn btn-primary action-btn stream-btn" onClick={() => setShowStream(true)}>
+                  <Play size={20} fill="currentColor" /> Stream Now
+                </button>
+                <button className="btn btn-outline action-btn" onClick={handleWatch}>
+                  <Tv size={20} /> Trailer
                 </button>
                 <button 
                   className={`btn action-btn ${showSoonMsg ? 'btn-soon' : 'btn-outline'}`} 
@@ -170,7 +166,7 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
                   {showSoonMsg ? (
                     <><AlertCircle size={20} /> শীঘ্রই সংযুক্ত হবে</>
                   ) : (
-                    <><Download size={20} /> Download</>
+                    <><Download size={20} /> Direct Drive</>
                   )}
                 </button>
                 <button 
@@ -181,8 +177,6 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
                   {isSaved ? 'Saved' : 'Save'}
                 </button>
               </div>
-
-
 
               {details.Ratings && details.Ratings.length > 0 && (
                 <div className="ratings-breakdown">
@@ -220,6 +214,46 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
           </div>
         )}
       </div>
+
+      {/* Multi-Server Player Modal */}
+      {showStream && (
+        <div className="stream-modal-overlay" onClick={() => setShowStream(false)}>
+          <div className="stream-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="stream-header-bar">
+              <div className="server-tabs">
+                <span className="server-label"><Server size={16} /> Server:</span>
+                <button 
+                  className={`server-tab ${activeServer === 'server1' ? 'active' : ''}`}
+                  onClick={() => setActiveServer('server1')}
+                >
+                  Server 1 (Fast HD / Multi-Audio)
+                </button>
+                <button 
+                  className={`server-tab ${activeServer === 'server2' ? 'active' : ''}`}
+                  onClick={() => setActiveServer('server2')}
+                >
+                  Server 2 (AutoEmbed)
+                </button>
+                <button 
+                  className={`server-tab ${activeServer === 'server3' ? 'active' : ''}`}
+                  onClick={() => setActiveServer('server3')}
+                >
+                  Server 3 (Vidsrc)
+                </button>
+              </div>
+              <button className="close-stream-btn" onClick={() => setShowStream(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <iframe 
+              src={getServerUrl()}
+              allowFullScreen
+              frameBorder="0"
+              className="stream-iframe"
+            ></iframe>
+          </div>
+        </div>
+      )}
 
       {showGateway && (
         <DownloadGateway 

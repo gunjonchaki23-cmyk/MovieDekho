@@ -332,3 +332,106 @@
 
 /* VPN Affiliate Promo Card */
 
+
+/* Multi-Server Player Modal Styles */
+.stream-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.95);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.stream-modal-content {
+  width: 95%;
+  height: 90%;
+  position: relative;
+  background: #0d0d0d;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stream-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.2rem;
+  background: #141414;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.server-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.server-label {
+  color: #b3b3b3;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-right: 0.4rem;
+}
+
+.server-tab {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cccccc;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.server-tab:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.server-tab.active {
+  background: #e50914;
+  color: #ffffff;
+  border-color: #e50914;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
+}
+
+.close-stream-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.close-stream-btn:hover {
+  background: #e50914;
+}
+
+.stream-iframe {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  border: none;
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MovieDekho</string>
+    <string name="title_activity_main">MovieDekho</string>
+    <string name="package_name">com.moviedekho.app</string>
+    <string name="custom_url_scheme">com.moviedekho.app</string>
+</resources>
