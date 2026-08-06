@@ -13,14 +13,11 @@ import java.util.List;
 
 public class MainActivity extends BridgeActivity {
 
-    // Known ad, popunder, and tracker domains to block at the native socket layer
     private static final List<String> AD_DOMAINS = Arrays.asList(
         "publishedelegance.com",
         "adsterra.com",
         "popads.net",
         "popcash.net",
-        "bet365",
-        "1xbet",
         "exoclick.com",
         "propellerads.com",
         "juicyads.com",
@@ -36,31 +33,26 @@ public class MainActivity extends BridgeActivity {
         WebView webView = this.bridge.getWebView();
         if (webView != null) {
             WebSettings settings = webView.getSettings();
-            // Block pop-up and popunder windows natively
             settings.setJavaScriptCanOpenWindowsAutomatically(false);
             settings.setSupportMultipleWindows(false);
             
             webView.setWebViewClient(new WebViewClient() {
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                    String url = request.getUrl().toString();
+                    String url = request.getUrl().toString().toLowerCase();
                     
                     for (String domain : AD_DOMAINS) {
                         if (url.contains(domain)) {
-                            return true; // Cancel loading the ad URL
+                            return true; // Block ad redirect
                         }
                     }
                     
-                    if (url.startsWith("http://localhost") || url.startsWith("https://localhost") || url.contains("moviedekho")) {
-                        return false;
-                    }
-                    
-                    return true;
+                    return false;
                 }
 
                 @Override
                 public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                    String url = request.getUrl().toString();
+                    String url = request.getUrl().toString().toLowerCase();
                     
                     for (String domain : AD_DOMAINS) {
                         if (url.contains(domain)) {
