@@ -41,9 +41,13 @@ public class MainActivity extends BridgeActivity {
                 public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                     String url = request.getUrl().toString().toLowerCase();
                     
+                    if (url.startsWith("https://localhost") || url.startsWith("http://localhost") || url.startsWith("file://")) {
+                        return false;
+                    }
+                    
                     for (String domain : AD_DOMAINS) {
                         if (url.contains(domain)) {
-                            return true; // Block ad redirect
+                            return true;
                         }
                     }
                     
