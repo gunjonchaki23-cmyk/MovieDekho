@@ -88,7 +88,6 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
                 allowFullScreen
                 frameBorder="0"
                 className="stream-iframe"
-                sandbox="allow-scripts allow-same-origin allow-presentation"
               ></iframe>
             </div>
             
