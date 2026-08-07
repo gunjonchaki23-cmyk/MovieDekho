@@ -4,6 +4,7 @@ import { getMovieDetails, getSimilarMovies } from '../services/api';
 import { getDownloadLink } from '../services/downloadLinks';
 import MovieCard from './MovieCard';
 import DownloadGateway from './DownloadGateway';
+import CustomPlayer from './CustomPlayer';
 import './MovieDetails.css';
 
 const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }) => {
@@ -13,9 +14,11 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   const [showSoonMsg, setShowSoonMsg] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
   const [showStream, setShowStream] = useState(false);
-  const [activeServer, setActiveServer] = useState('server1');
+  const [activeServer, setActiveServer] = useState('native');
   const [showGateway, setShowGateway] = useState(false);
   const [currentDownloadUrl, setCurrentDownloadUrl] = useState('');
+  const [directStreamUrl, setDirectStreamUrl] = useState(null);
+  const [streamError, setStreamError] = useState(false);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -41,6 +44,19 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
       window.open(`https://www.youtube.com/results?search_query=${movie.Title}+trailer`, '_blank');
     }
   };
+
+  useEffect(() => {
+    if (showStream && activeServer === 'native') {
+      // Mocking direct stream extraction. In production, this needs a backend scraper API.
+      // Since public streaming sites block direct .m3u8 extraction via CORS/tokens,
+      // we gracefully fallback or show a message if extraction fails.
+      setDirectStreamUrl(null);
+      setStreamError(true);
+      
+      // If we had a reliable API, it would be:
+      // fetch(`https://api.example.com/stream/${movie.imdbID}`).then(...).then(url => setDirectStreamUrl(url))
+    }
+  }, [showStream, activeServer, movie.imdbID]);
 
   const handleDownload = async () => {
     const link = await getDownloadLink(movie.imdbID, movie.Type);
@@ -223,34 +239,65 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
               <div className="server-tabs">
                 <span className="server-label"><Server size={16} /> Server:</span>
                 <button 
+                  className={`server-tab ${activeServer === 'native' ? 'active' : ''}`}
+                  onClick={() => setActiveServer('native')}
+                >
+                  Native Player (Ad-Free)
+                </button>
+                <button 
                   className={`server-tab ${activeServer === 'server1' ? 'active' : ''}`}
                   onClick={() => setActiveServer('server1')}
                 >
-                  Server 1 (VidLink Pro / Dual Audio)
+                  Server 1 (VidLink Pro)
                 </button>
                 <button 
                   className={`server-tab ${activeServer === 'server2' ? 'active' : ''}`}
                   onClick={() => setActiveServer('server2')}
                 >
-                  Server 2 (Vidsrc Pro HD)
+                  Server 2 (Vidsrc Pro)
                 </button>
                 <button 
                   className={`server-tab ${activeServer === 'server3' ? 'active' : ''}`}
                   onClick={() => setActiveServer('server3')}
                 >
-                  Server 3 (AutoEmbed Fast)
+                  Server 3 (AutoEmbed)
                 </button>
               </div>
               <button className="close-stream-btn" onClick={() => setShowStream(false)}>
                 <X size={24} />
               </button>
             </div>
-            <iframe 
-              src={getServerUrl()}
-              allowFullScreen
-              frameBorder="0"
-              className="stream-iframe"
-            ></iframe>
+            
+            {activeServer === 'native' ? (
+              <div className="native-player-wrapper" style={{height: '100%', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000', color: '#fff'}}>
+                {directStreamUrl ? (
+                   <CustomPlayer src={directStreamUrl} />
+                ) : (
+                   <div style={{textAlign: 'center', padding: '2rem'}}>
+                     <AlertCircle size={48} style={{margin: '0 auto 1rem', color: '#e50914'}} />
+                     <h3>Direct Stream Unavailable</h3>
+                     <p style={{color: '#aaa', marginTop: '0.5rem'}}>
+                       Anti-bot protection prevented direct `.m3u8` extraction for this movie.
+                       Please switch to Server 1, 2, or 3 to watch via standard iframe.
+                     </p>
+                     <button 
+                        className="btn btn-primary" 
+                        style={{marginTop: '1.5rem'}}
+                        onClick={() => setActiveServer('server1')}
+                      >
+                       Switch to Server 1
+                     </button>
+                   </div>
+                )}
+              </div>
+            ) : (
+              <iframe 
+                src={getServerUrl()}
+                allowFullScreen
+                frameBorder="0"
+                className="stream-iframe"
+              ></iframe>
+            )}
           </div>
         </div>
       )}

@@ -1,0 +1,15 @@
+.custom-player-container {
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  position: relative;
+}
+
+.custom-player-container .plyr {
+  height: 100%;
+  --plyr-color-main: #e50914; /* Netflix red */
+  --plyr-video-background: #000;
+}
