@@ -3,7 +3,6 @@
   "appName": "MovieDekho",
   "webDir": "dist",
   "server": {
-    "url": "https://moviedekhofree.netlify.app",
-    "cleartext": true
+    "androidScheme": "https"
   }
 }
