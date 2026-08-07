@@ -45,18 +45,33 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
     }
   };
 
-  useEffect(() => {
-    if (showStream && activeServer === 'native') {
-      // Mocking direct stream extraction. In production, this needs a backend scraper API.
-      // Since public streaming sites block direct .m3u8 extraction via CORS/tokens,
-      // we gracefully fallback or show a message if extraction fails.
+  const tryFetchDirectStream = async () => {
+    setIsPlayerLoading(true);
+    setStreamError(false);
+    try {
+      // Call our local Node.js scraper API
+      const response = await fetch(`http://localhost:5000/api/stream?id=${movie.imdbID}&title=${encodeURIComponent(movie.Title)}`);
+      const data = await response.json();
+      
+      if (data.success && data.url) {
+        setDirectStreamUrl(data.url);
+      } else {
+        setDirectStreamUrl(null);
+        setStreamError(true);
+      }
+    } catch(e) {
+      console.error("Failed to fetch from local scraper API:", e);
       setDirectStreamUrl(null);
       setStreamError(true);
-      
-      // If we had a reliable API, it would be:
-      // fetch(`https://api.example.com/stream/${movie.imdbID}`).then(...).then(url => setDirectStreamUrl(url))
     }
-  }, [showStream, activeServer, movie.imdbID]);
+    setIsPlayerLoading(false);
+  }
+
+  useEffect(() => {
+    if (showStream && activeServer === 'native') {
+      tryFetchDirectStream();
+    }
+  }, [showStream, activeServer, movie.imdbID, movie.Title]);
 
   const handleDownload = async () => {
     const link = await getDownloadLink(movie.imdbID, movie.Type);
@@ -270,14 +285,16 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
             
             {activeServer === 'native' ? (
               <div className="native-player-wrapper" style={{height: '100%', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000', color: '#fff'}}>
-                {directStreamUrl ? (
+                {isPlayerLoading ? (
+                  <div className="modal-loader">Scraping stream link...</div>
+                ) : directStreamUrl ? (
                    <CustomPlayer src={directStreamUrl} />
                 ) : (
                    <div style={{textAlign: 'center', padding: '2rem'}}>
                      <AlertCircle size={48} style={{margin: '0 auto 1rem', color: '#e50914'}} />
                      <h3>Direct Stream Unavailable</h3>
-                     <p style={{color: '#aaa', marginTop: '0.5rem'}}>
-                       Anti-bot protection prevented direct `.m3u8` extraction for this movie.
+                     <p style={{color: '#aaa', marginTop: '0.5rem', maxWidth: '400px'}}>
+                       Anti-bot protection (Cloudflare) prevented direct `.m3u8` extraction for this movie via the Node.js backend.
                        Please switch to Server 1, 2, or 3 to watch via standard iframe.
                      </p>
                      <button 
