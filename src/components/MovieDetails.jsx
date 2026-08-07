@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Play, Download, Star, Clock, Heart, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Play, Download, Star, Clock, Heart, AlertCircle, Maximize, Minimize } from 'lucide-react';
 import { getMovieDetails, getSimilarMovies } from '../services/api';
 import { getDownloadLink } from '../services/downloadLinks';
 import MovieCard from './MovieCard';
@@ -15,6 +15,24 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   
   const [showGateway, setShowGateway] = useState(false);
   const [currentDownloadUrl, setCurrentDownloadUrl] = useState('');
+  const [isAppFullscreen, setIsAppFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    setIsAppFullscreen(!isAppFullscreen);
+    try {
+      if (!isAppFullscreen) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    } catch(e) {
+      console.log(e);
+    }
+  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -63,7 +81,11 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
         ) : details ? (
           <div className="movie-details-grid">
             
-            <div className="movie-poster-col">
+            <div className={`movie-poster-col ${isAppFullscreen ? 'app-fullscreen' : ''}`}>
+              <button className="custom-fullscreen-btn" onClick={toggleFullscreen}>
+                {isAppFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                <span style={{marginLeft: '8px', fontSize: '0.85rem', fontWeight: 'bold'}}>Fullscreen</span>
+              </button>
               <iframe 
                 src={streamUrl}
                 allowFullScreen={true}

@@ -48,10 +48,43 @@
   position: relative;
 }
 
-.detail-poster {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* Custom Fullscreen overrides */
+.app-fullscreen {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 99999;
+  background: black;
+}
+
+.custom-fullscreen-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 8px 12px;
+  border-radius: 8px;
+  z-index: 50;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+  transition: all 0.2s ease;
+}
+
+.custom-fullscreen-btn:active {
+  transform: scale(0.95);
+  background: var(--accent);
+}
+
+.app-fullscreen .custom-fullscreen-btn {
+  top: 25px;
+  right: 25px;
 }
 
 .trailer-container, .stream-container {
