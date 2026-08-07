@@ -47,8 +47,8 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   };
 
   const typeEndpoint = movie.Type === 'series' ? 'tv' : 'movie';
-  
-  const streamUrl = `https://api.codespecters.com/embed/${typeEndpoint}/${movie.imdbID}?apikey=nx_8815a43efad9d360be0fe48136f18327`;
+  // Using vidsrc.net with an aggressive sandbox attribute to block all popups
+  const streamUrl = `https://vidsrc.net/embed/${typeEndpoint}/${movie.imdbID}`;
 
 
   return (
@@ -70,6 +70,7 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
                 webkitallowfullscreen="true"
                 mozallowfullscreen="true"
                 allow="autoplay; fullscreen"
+                sandbox="allow-scripts allow-same-origin allow-presentation"
                 frameBorder="0"
                 className="stream-iframe"
               ></iframe>
