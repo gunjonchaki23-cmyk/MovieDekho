@@ -47,8 +47,8 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   };
 
   const typeEndpoint = movie.Type === 'series' ? 'tv' : 'movie';
-  // Using vidsrc.net with an aggressive sandbox attribute to block all popups
-  const streamUrl = `https://vidsrc.net/embed/${typeEndpoint}/${movie.imdbID}`;
+  // Using vidlink.pro as it is the most reliable ad-free player. Sandbox is removed as it blocks the player.
+  const streamUrl = `https://vidlink.pro/${typeEndpoint}/${movie.imdbID}?primaryColor=5C67FA&secondaryColor=171E2D&iconColor=5C67FA&autoplay=false`;
 
 
   return (
@@ -70,7 +70,6 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
                 webkitallowfullscreen="true"
                 mozallowfullscreen="true"
                 allow="autoplay; fullscreen"
-                sandbox="allow-scripts allow-same-origin allow-presentation"
                 frameBorder="0"
                 className="stream-iframe"
               ></iframe>
