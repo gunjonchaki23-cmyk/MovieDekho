@@ -16,6 +16,7 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   const [showGateway, setShowGateway] = useState(false);
   const [currentDownloadUrl, setCurrentDownloadUrl] = useState('');
   const [isAppFullscreen, setIsAppFullscreen] = useState(false);
+  const [activeServer, setActiveServer] = useState('server1');
 
   const toggleFullscreen = () => {
     setIsAppFullscreen(!isAppFullscreen);
@@ -65,9 +66,13 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   };
 
   const typeEndpoint = movie.Type === 'series' ? 'tv' : 'movie';
-  // Using vidlink.pro as it is the most reliable ad-free player. Sandbox is removed as it blocks the player.
-  const streamUrl = `https://vidlink.pro/${typeEndpoint}/${movie.imdbID}?primaryColor=5C67FA&secondaryColor=171E2D&iconColor=5C67FA&autoplay=false`;
-
+  
+  const getServerUrl = () => {
+    if (activeServer === 'server1') return `https://vidlink.pro/${typeEndpoint}/${movie.imdbID}?primaryColor=5C67FA&secondaryColor=171E2D&iconColor=5C67FA&autoplay=false`;
+    if (activeServer === 'server2') return `https://vidsrc.pm/embed/${typeEndpoint}/${movie.imdbID}`;
+    if (activeServer === 'server3') return `https://player.autoembed.cc/embed/${typeEndpoint}/${movie.imdbID}`;
+    return `https://vidsrc.net/embed/${typeEndpoint}/${movie.imdbID}`;
+  };
 
   return (
     <div className="modal-overlay animate-fade-in">
@@ -82,12 +87,27 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
           <div className="movie-details-grid">
             
             <div className={`movie-poster-col ${isAppFullscreen ? 'app-fullscreen' : ''}`}>
+              <div className="server-tabs">
+                <button 
+                  className={`server-tab ${activeServer === 'server1' ? 'active' : ''}`}
+                  onClick={() => setActiveServer('server1')}
+                >Server 1 (Ad-Free)</button>
+                <button 
+                  className={`server-tab ${activeServer === 'server2' ? 'active' : ''}`}
+                  onClick={() => setActiveServer('server2')}
+                >Server 2</button>
+                <button 
+                  className={`server-tab ${activeServer === 'server3' ? 'active' : ''}`}
+                  onClick={() => setActiveServer('server3')}
+                >Server 3</button>
+              </div>
+
               <button className="custom-fullscreen-btn" onClick={toggleFullscreen}>
                 {isAppFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
                 <span style={{marginLeft: '8px', fontSize: '0.85rem', fontWeight: 'bold'}}>Fullscreen</span>
               </button>
               <iframe 
-                src={streamUrl}
+                src={getServerUrl()}
                 allowFullScreen={true}
                 webkitallowfullscreen="true"
                 mozallowfullscreen="true"

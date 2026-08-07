@@ -46,6 +46,39 @@
   aspect-ratio: 16/9;
   background: #000;
   position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.server-tabs {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 8px;
+  z-index: 40;
+  overflow-x: auto;
+}
+
+.server-tab {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.server-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
 }
 
 /* Custom Fullscreen overrides */
