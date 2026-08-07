@@ -59,13 +59,9 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
     if (activeServer === 'server1') {
       return `https://vidlink.pro/${typeEndpoint}/${movie.imdbID}?primaryColor=e50914&secondaryColor=141414&iconColor=e50914`;
     } else if (activeServer === 'server2') {
-      return `https://embed.su/embed/${typeEndpoint}/${movie.imdbID}`;
-    } else if (activeServer === 'server3') {
-      return `https://player.autoembed.cc/embed/${typeEndpoint}/${movie.imdbID}`;
-    } else if (activeServer === 'server4') {
-      return `https://vidsrc.to/embed/${typeEndpoint}/${movie.imdbID}`;
+      return `https://vidsrc.pm/embed/${typeEndpoint}/${movie.imdbID}`;
     } else {
-      return `https://www.2embed.cc/embed/${movie.imdbID}`;
+      return `https://player.autoembed.cc/embed/${typeEndpoint}/${movie.imdbID}`;
     }
   };
 
@@ -236,25 +232,13 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
                   className={`server-tab ${activeServer === 'server2' ? 'active' : ''}`}
                   onClick={() => setActiveServer('server2')}
                 >
-                  Server 2 (EmbedSu 1080p)
+                  Server 2 (Vidsrc Pro HD)
                 </button>
                 <button 
                   className={`server-tab ${activeServer === 'server3' ? 'active' : ''}`}
                   onClick={() => setActiveServer('server3')}
                 >
-                  Server 3 (AutoEmbed)
-                </button>
-                <button 
-                  className={`server-tab ${activeServer === 'server4' ? 'active' : ''}`}
-                  onClick={() => setActiveServer('server4')}
-                >
-                  Server 4 (Vidsrc.to)
-                </button>
-                <button 
-                  className={`server-tab ${activeServer === 'server5' ? 'active' : ''}`}
-                  onClick={() => setActiveServer('server5')}
-                >
-                  Server 5 (2Embed)
+                  Server 3 (AutoEmbed Fast)
                 </button>
               </div>
               <button className="close-stream-btn" onClick={() => setShowStream(false)}>
