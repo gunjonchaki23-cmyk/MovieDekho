@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Play, Download, Star, Clock, Calendar, Heart, AlertCircle, Tv, Server } from 'lucide-react';
+import { ArrowLeft, Play, Download, Star, Clock, Heart, AlertCircle } from 'lucide-react';
 import { getMovieDetails, getSimilarMovies } from '../services/api';
 import { getDownloadLink } from '../services/downloadLinks';
 import MovieCard from './MovieCard';
@@ -12,13 +12,16 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   const [similar, setSimilar] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showSoonMsg, setShowSoonMsg] = useState(false);
-  const [showTrailer, setShowTrailer] = useState(false);
-  const [showStream, setShowStream] = useState(false);
+  
+  // By default we try to show stream in this layout on top
   const [activeServer, setActiveServer] = useState('native');
   const [showGateway, setShowGateway] = useState(false);
   const [currentDownloadUrl, setCurrentDownloadUrl] = useState('');
+  
+  // Custom Player States
   const [directStreamUrl, setDirectStreamUrl] = useState(null);
   const [streamError, setStreamError] = useState(false);
+  const [isPlayerLoading, setIsPlayerLoading] = useState(false);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -37,19 +40,10 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
     fetchDetails();
   }, [movie.imdbID]);
 
-  const handleWatch = () => {
-    if (details?.TrailerKey) {
-      setShowTrailer(true);
-    } else {
-      window.open(`https://www.youtube.com/results?search_query=${movie.Title}+trailer`, '_blank');
-    }
-  };
-
   const tryFetchDirectStream = async () => {
     setIsPlayerLoading(true);
     setStreamError(false);
     try {
-      // Call our local Node.js scraper API
       const response = await fetch(`http://localhost:5000/api/stream?id=${movie.imdbID}&title=${encodeURIComponent(movie.Title)}`);
       const data = await response.json();
       
@@ -60,7 +54,6 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
         setStreamError(true);
       }
     } catch(e) {
-      console.error("Failed to fetch from local scraper API:", e);
       setDirectStreamUrl(null);
       setStreamError(true);
     }
@@ -68,10 +61,10 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   }
 
   useEffect(() => {
-    if (showStream && activeServer === 'native') {
+    if (activeServer === 'native') {
       tryFetchDirectStream();
     }
-  }, [showStream, activeServer, movie.imdbID, movie.Title]);
+  }, [activeServer, movie.imdbID, movie.Title]);
 
   const handleDownload = async () => {
     const link = await getDownloadLink(movie.imdbID, movie.Type);
@@ -87,151 +80,138 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   const typeEndpoint = movie.Type === 'series' ? 'tv' : 'movie';
   
   const getServerUrl = () => {
-    if (activeServer === 'server1') {
-      return `https://vidlink.pro/${typeEndpoint}/${movie.imdbID}?primaryColor=e50914&secondaryColor=141414&iconColor=e50914`;
-    } else if (activeServer === 'server2') {
-      return `https://vidsrc.pm/embed/${typeEndpoint}/${movie.imdbID}`;
-    } else {
-      return `https://player.autoembed.cc/embed/${typeEndpoint}/${movie.imdbID}`;
-    }
+    if (activeServer === 'server1') return `https://vidlink.pro/${typeEndpoint}/${movie.imdbID}?primaryColor=5C67FA&secondaryColor=171E2D&iconColor=5C67FA`;
+    if (activeServer === 'server2') return `https://vidsrc.pm/embed/${typeEndpoint}/${movie.imdbID}`;
+    return `https://player.autoembed.cc/embed/${typeEndpoint}/${movie.imdbID}`;
   };
 
   return (
-    <div className="modal-overlay animate-fade-in" onClick={onClose}>
-      {details && details.Poster !== "N/A" && (
-        <div 
-          className="modal-bg-image" 
-          style={{ backgroundImage: `url(${details.Poster})` }} 
-        />
-      )}
-      <div className="movie-details-modal glass-panel" onClick={e => e.stopPropagation()}>
+    <div className="modal-overlay animate-fade-in">
+      <div className="movie-details-modal">
         <button className="close-btn" onClick={onClose}>
-          <X size={24} />
+          <ArrowLeft size={28} />
         </button>
 
         {loading ? (
-          <div className="modal-loader">Loading details...</div>
+          <div style={{padding: '50px', textAlign: 'center', color: 'white'}}>Loading details...</div>
         ) : details ? (
           <div className="movie-details-grid">
+            
             <div className="movie-poster-col">
-              {showTrailer ? (
-                <div className="trailer-container">
-                  <iframe 
-                    src={`https://www.youtube.com/embed/${details.TrailerKey}?autoplay=1`} 
-                    title="YouTube video player" 
-                    frameBorder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowFullScreen
-                    className="trailer-iframe"
-                  ></iframe>
+              <div className="server-tabs">
+                <button 
+                  className={`server-tab ${activeServer === 'native' ? 'active' : ''}`}
+                  onClick={() => setActiveServer('native')}
+                >Native</button>
+                <button 
+                  className={`server-tab ${activeServer === 'server1' ? 'active' : ''}`}
+                  onClick={() => setActiveServer('server1')}
+                >S1</button>
+                <button 
+                  className={`server-tab ${activeServer === 'server2' ? 'active' : ''}`}
+                  onClick={() => setActiveServer('server2')}
+                >S2</button>
+              </div>
+
+              {activeServer === 'native' ? (
+                <div style={{height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  {isPlayerLoading ? (
+                    <div style={{color: 'white'}}>Scraping link...</div>
+                  ) : directStreamUrl ? (
+                    <CustomPlayer src={directStreamUrl} />
+                  ) : (
+                    <div style={{textAlign: 'center', color: '#aaa', padding: '20px'}}>
+                      <AlertCircle size={32} style={{margin: '0 auto 10px', color: '#5C67FA'}} />
+                      <p style={{fontSize: '0.85rem'}}>Direct Stream Unavailable.<br/>Switch to S1 or S2 to watch via iframe.</p>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <img 
-                  src={details.Poster !== "N/A" ? details.Poster : "https://via.placeholder.com/300x450?text=No+Poster"} 
-                  alt={details.Title} 
-                  className="detail-poster" 
-                />
+                <iframe 
+                  src={getServerUrl()}
+                  allowFullScreen
+                  frameBorder="0"
+                  className="stream-iframe"
+                ></iframe>
               )}
             </div>
             
             <div className="movie-info-col">
-              <h2 className="detail-title">{details.Title}</h2>
+              
+              <div className="detail-actions">
+                <button 
+                  className={`btn ${isSaved ? 'btn-outline' : 'btn-primary'}`} 
+                  onClick={onToggleSave}
+                  style={{flex: 1, padding: '12px 10px', borderRadius: '30px'}}
+                >
+                  <Heart size={18} fill={isSaved ? "currentColor" : "none"} style={{marginRight: '8px'}}/> 
+                  {isSaved ? 'Saved' : '+ Watchlist'}
+                </button>
+
+                <button 
+                  className="btn btn-outline" 
+                  onClick={handleDownload}
+                  style={{flex: 1, padding: '12px 10px', borderRadius: '30px', borderColor: showSoonMsg ? '#f59e0b' : ''}}
+                >
+                  <Download size={18} style={{marginRight: '8px'}} />
+                  {showSoonMsg ? 'Coming Soon' : 'Download'}
+                </button>
+              </div>
+
+              <h2 className="detail-title">
+                {details.Title} {movie.isHindiDubbed && '[Hindi]'}
+              </h2>
               
               <div className="detail-meta">
-                <span className="meta-item"><Star size={16} className="text-accent" /> {details.imdbRating}</span>
-                <span className="meta-item"><Calendar size={16} /> {details.Year}</span>
+                <span className="meta-item"><Star size={16} style={{color: '#f59e0b'}} /> {details.imdbRating}/10</span>
+                <span>{details.Year}</span>
+                <span style={{textTransform: 'capitalize'}}>{movie.Type}</span>
                 <span className="meta-item"><Clock size={16} /> {details.Runtime}</span>
-                <span className="meta-badge">{details.Rated}</span>
-                {movie.isHindiDubbed && (
-                  <span className="meta-badge" style={{ backgroundColor: 'rgba(229, 9, 20, 0.9)', color: 'white' }}>
-                    Hindi Dub
-                  </span>
-                )}
               </div>
               
               <div className="detail-genres">
-                {details.Genre.split(',').map((genre, i) => (
-                  <span key={i} className="genre-tag">{genre.trim()}</span>
-                ))}
+                {details.Genre.split(',').join(' • ')}
               </div>
               
               <div className="detail-plot">
-                <h3>Plot</h3>
                 <p>{details.Plot}</p>
               </div>
+
+              <div className="section-title">Resources</div>
+              <div>
+                <span className="resource-pill">Audio Track: {movie.isHindiDubbed ? 'Hindi' : 'English / Original'}</span>
+              </div>
               
-              <div className="detail-cast">
-                <h3>Cast</h3>
-                {details.ActorsFull && details.ActorsFull.length > 0 ? (
-                  <div className="cast-list no-scrollbar">
-                    {details.ActorsFull.map(actor => (
-                      <div key={actor.id} className="cast-card">
-                        <div className="cast-avatar">
-                          {actor.profile_path ? (
-                            <img src={actor.profile_path} alt={actor.name} />
-                          ) : (
-                            <div className="cast-avatar-placeholder">{actor.name.charAt(0)}</div>
-                          )}
-                        </div>
-                        <span className="cast-name">{actor.name}</span>
-                        <span className="cast-character">{actor.character}</span>
+              <div className="section-title">Cast</div>
+              {details.ActorsFull && details.ActorsFull.length > 0 ? (
+                <div className="cast-list no-scrollbar">
+                  {details.ActorsFull.map(actor => (
+                    <div key={actor.id} className="cast-card">
+                      <div className="cast-avatar">
+                        {actor.profile_path ? (
+                          <img src={actor.profile_path} alt={actor.name} />
+                        ) : (
+                          <div style={{display:'flex', alignItems:'center', justifyContent:'center', width:'100%', height:'100%', fontSize: '24px'}}>{actor.name.charAt(0)}</div>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p>{details.Actors}</p>
-                )}
-              </div>
-
-              <div className="detail-actions">
-                <button className="btn btn-primary action-btn stream-btn" onClick={() => setShowStream(true)}>
-                  <Play size={20} fill="currentColor" /> Stream Full Movie
-                </button>
-                <button className="btn btn-outline action-btn" onClick={handleWatch}>
-                  <Tv size={20} /> Trailer
-                </button>
-                <button 
-                  className={`btn action-btn ${showSoonMsg ? 'btn-soon' : 'btn-outline'}`} 
-                  onClick={handleDownload}
-                >
-                  {showSoonMsg ? (
-                    <><AlertCircle size={20} /> শীঘ্রই সংযুক্ত হবে</>
-                  ) : (
-                    <><Download size={20} /> Direct Drive</>
-                  )}
-                </button>
-                <button 
-                  className={`btn btn-outline action-btn save-action-btn ${isSaved ? 'saved' : ''}`} 
-                  onClick={onToggleSave}
-                >
-                  <Heart size={20} fill={isSaved ? "currentColor" : "none"} /> 
-                  {isSaved ? 'Saved' : 'Save'}
-                </button>
-              </div>
-
-              {details.Ratings && details.Ratings.length > 0 && (
-                <div className="ratings-breakdown">
-                  <h3>Ratings</h3>
-                  <div className="ratings-list">
-                    {details.Ratings.map((rating, idx) => (
-                      <div key={idx} className="rating-badge">
-                        <span className="rating-source">{rating.Source}</span>
-                        <span className="rating-value">{rating.Value}</span>
-                      </div>
-                    ))}
-                  </div>
+                      <span className="cast-name">{actor.name}</span>
+                      <span className="cast-character">{actor.character}</span>
+                    </div>
+                  ))}
                 </div>
+              ) : (
+                <p style={{color: 'var(--text-secondary)'}}>{details.Actors}</p>
               )}
             </div>
           </div>
         ) : (
-          <div className="modal-error">Failed to load details.</div>
+          <div style={{padding: '50px', textAlign: 'center', color: '#ef4444'}}>Failed to load details.</div>
         )}
 
         {/* Similar Movies Section */}
         {!loading && similar.length > 0 && (
           <div className="similar-movies-section">
-            <h3>You might also like</h3>
+            <div className="section-title">More Like This</div>
             <div className="similar-movies-scroll no-scrollbar">
               {similar.map(simMovie => (
                 <div key={simMovie.imdbID} className="similar-movie-item">
@@ -245,79 +225,6 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
           </div>
         )}
       </div>
-
-      {/* Multi-Server Player Modal */}
-      {showStream && (
-        <div className="stream-modal-overlay" onClick={() => setShowStream(false)}>
-          <div className="stream-modal-content" onClick={e => e.stopPropagation()}>
-            <div className="stream-header-bar">
-              <div className="server-tabs">
-                <span className="server-label"><Server size={16} /> Server:</span>
-                <button 
-                  className={`server-tab ${activeServer === 'native' ? 'active' : ''}`}
-                  onClick={() => setActiveServer('native')}
-                >
-                  Native Player (Ad-Free)
-                </button>
-                <button 
-                  className={`server-tab ${activeServer === 'server1' ? 'active' : ''}`}
-                  onClick={() => setActiveServer('server1')}
-                >
-                  Server 1 (VidLink Pro)
-                </button>
-                <button 
-                  className={`server-tab ${activeServer === 'server2' ? 'active' : ''}`}
-                  onClick={() => setActiveServer('server2')}
-                >
-                  Server 2 (Vidsrc Pro)
-                </button>
-                <button 
-                  className={`server-tab ${activeServer === 'server3' ? 'active' : ''}`}
-                  onClick={() => setActiveServer('server3')}
-                >
-                  Server 3 (AutoEmbed)
-                </button>
-              </div>
-              <button className="close-stream-btn" onClick={() => setShowStream(false)}>
-                <X size={24} />
-              </button>
-            </div>
-            
-            {activeServer === 'native' ? (
-              <div className="native-player-wrapper" style={{height: '100%', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000', color: '#fff'}}>
-                {isPlayerLoading ? (
-                  <div className="modal-loader">Scraping stream link...</div>
-                ) : directStreamUrl ? (
-                   <CustomPlayer src={directStreamUrl} />
-                ) : (
-                   <div style={{textAlign: 'center', padding: '2rem'}}>
-                     <AlertCircle size={48} style={{margin: '0 auto 1rem', color: '#e50914'}} />
-                     <h3>Direct Stream Unavailable</h3>
-                     <p style={{color: '#aaa', marginTop: '0.5rem', maxWidth: '400px'}}>
-                       Anti-bot protection (Cloudflare) prevented direct `.m3u8` extraction for this movie via the Node.js backend.
-                       Please switch to Server 1, 2, or 3 to watch via standard iframe.
-                     </p>
-                     <button 
-                        className="btn btn-primary" 
-                        style={{marginTop: '1.5rem'}}
-                        onClick={() => setActiveServer('server1')}
-                      >
-                       Switch to Server 1
-                     </button>
-                   </div>
-                )}
-              </div>
-            ) : (
-              <iframe 
-                src={getServerUrl()}
-                allowFullScreen
-                frameBorder="0"
-                className="stream-iframe"
-              ></iframe>
-            )}
-          </div>
-        </div>
-      )}
 
       {showGateway && (
         <DownloadGateway 

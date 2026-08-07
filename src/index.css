@@ -1,14 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg-primary: #0a0a0a; /* Deep premium black */
-  --bg-secondary: #121212; /* Very dark gray */
+  --bg-primary: #0C111B; /* Deep Navy Blue */
+  --bg-secondary: #171E2D; /* Lighter Navy */
+  --bg-tertiary: #1E293B; /* Slate */
   --text-primary: #ffffff; 
-  --text-secondary: #a3a3a3; /* Premium subdued text */
-  --accent: #e50914; 
-  --accent-hover: #ff0f1a; 
-  --glass: rgba(18, 18, 18, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  --text-secondary: #94A3B8; /* Cool Gray */
+  --accent: #5C67FA; /* Vibrant Blue */
+  --accent-hover: #4F46E5; 
+  --glass: rgba(23, 30, 45, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.05);
 }
 
 * {
@@ -20,8 +21,6 @@
 body {
   font-family: 'Outfit', sans-serif;
   background-color: var(--bg-primary);
-  background: radial-gradient(circle at top, #1f1f1f 0%, var(--bg-primary) 60%);
-  background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
@@ -49,7 +48,7 @@ h1, h2, h3, h4, h5, h6 {
 .glass-panel {
   background: var(--bg-secondary);
   border: none;
-  border-radius: 4px;
+  border-radius: 12px;
 }
 
 .btn {
@@ -57,10 +56,10 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.5rem 1.5rem;
-  border-radius: 4px;
+  padding: 0.7rem 1.5rem;
+  border-radius: 30px; /* Pill shape */
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
@@ -68,21 +67,54 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-  background-color: white;
-  color: black;
-}
-
-.btn-primary:hover {
-  background-color: rgba(255, 255, 255, 0.75);
-}
-
-.btn-outline {
-  background-color: rgba(109, 109, 110, 0.7);
+  background-color: var(--accent);
   color: white;
 }
 
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
 .btn-outline:hover {
-  background-color: rgba(109, 109, 110, 0.4);
+  background-color: rgba(92, 103, 250, 0.1);
+}
+
+.btn-dark {
+  background-color: var(--bg-tertiary);
+  color: white;
+}
+
+/* Category Pills */
+.category-pills-container {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 10px 4%;
+  margin-bottom: 20px;
+}
+
+.category-pill {
+  white-space: nowrap;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.category-pill.active {
+  background-color: var(--accent);
+  color: white;
 }
 
 /* Animations */
@@ -92,7 +124,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.5s ease forwards;
+  animation: fadeIn 0.3s ease forwards;
 }
 
 /* Hide scrollbar for horizontal scroll */

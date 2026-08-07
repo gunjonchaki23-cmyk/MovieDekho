@@ -160,22 +160,22 @@ function App() {
     setSelectedMovie(null);
   };
 
-  const isWatchlistMode = currentView === 'watchlist';
+  const isWatchlistMode = currentView === 'downloads'; // We mapped Watchlist to Downloads for now
   const showDefaultHome = !loading && !hasSearched && activeGenre === '' && !isWatchlistMode;
 
   return (
     <div className="app-container">
       <Header 
-        currentView={currentView} 
+        activeCategory={activeGenre || 'All'}
         onSearch={handleSearch}
-        setCurrentView={(view) => {
-          setCurrentView(view);
-          if (view === 'watchlist') {
-            setHasSearched(false);
+        setActiveCategory={(cat) => {
+          if(cat === 'All') {
             setActiveGenre('');
-            setQuery('');
+            setGenreMovies([]);
+          } else {
+            handleGenreSelect(cat);
           }
-        }} 
+        }}
       />
       
       <main className="main-content">
@@ -187,17 +187,13 @@ function App() {
           />
         )}
 
-        <div className="container" style={{ marginTop: (!isWatchlistMode && !hasSearched && activeGenre === '') ? '-10vh' : '100px', zIndex: 10, position: 'relative' }}>
+        <div className="container" style={{ marginTop: (!isWatchlistMode && !hasSearched && activeGenre === '') ? '-10vh' : '120px', zIndex: 10, position: 'relative' }}>
           
-          {!isWatchlistMode && !hasSearched && (
-            <div style={{ marginBottom: '2rem' }}>
-              <GenreFilter activeGenre={activeGenre} onGenreSelect={handleGenreSelect} />
-            </div>
-          )}
+          {/* We removed GenreFilter component since we moved it to Header pills */}
 
           {isWatchlistMode && (
             <div className="watchlist-section animate-fade-in">
-              <h1 className="section-title" style={{ fontSize: '2.5rem', marginBottom: '2rem' }}>My List</h1>
+              <h1 className="section-title" style={{ fontSize: '2.5rem', marginBottom: '2rem' }}>Downloads / Watchlist</h1>
               {watchlist.length === 0 ? (
                 <div className="empty-state">
                   <h2>Your list is empty</h2>
@@ -359,17 +355,8 @@ function App() {
       <MobileNav 
         activeTab={currentView} 
         onTabChange={(tab) => {
-          if (tab === 'search') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            const searchInput = document.querySelector('.search-input');
-            if (searchInput) searchInput.focus();
-          } else if (tab === 'trending') {
-            setCurrentView('home');
-            window.scrollTo({ top: 500, behavior: 'smooth' });
-          } else {
-            setCurrentView(tab);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
+          setCurrentView(tab);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }} 
         savedCount={watchlist.length} 
       />

@@ -1,81 +1,51 @@
-/* Desktop Base Styles */
+/* NetMovie Style Fullscreen Details */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(12px);
+  background: var(--bg-primary);
   z-index: 2000;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 2rem;
   overflow: hidden;
-}
-
-.modal-bg-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  filter: blur(35px) brightness(0.35);
-  z-index: -1;
-  transform: scale(1.1);
 }
 
 .movie-details-modal {
   position: relative;
-  width: 90%;
-  max-width: 950px;
-  background: rgba(18, 18, 18, 0.95);
-  backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  max-height: 90vh;
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  background: var(--bg-primary);
   overflow-y: auto;
-  box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 1), 0 0 20px rgba(255, 255, 255, 0.05);
+  border: none;
+  border-radius: 0;
 }
 
 .close-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  background: transparent;
+  border: none;
   color: white;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
   z-index: 30;
-  transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-  background: #e50914;
-  border-color: #e50914;
-  transform: scale(1.05);
-}
-
-.modal-loader, .modal-error {
-  padding: 4rem;
-  text-align: center;
-  font-size: 1.2rem;
-  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 5px;
 }
 
 .movie-details-grid {
-  display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.movie-poster-col {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  position: relative;
 }
 
 .detail-poster {
@@ -84,119 +54,109 @@
   object-fit: cover;
 }
 
-.trailer-container {
+.trailer-container, .stream-container {
   width: 100%;
   height: 100%;
-  min-height: 400px;
-  background: #000;
-  display: flex;
 }
 
-.trailer-iframe {
+.trailer-iframe, .stream-iframe {
   width: 100%;
   height: 100%;
-  flex: 1;
+  border: none;
 }
 
 .movie-info-col {
-  padding: 3rem;
+  padding: 20px 4%;
+}
+
+.detail-actions {
   display: flex;
-  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .detail-title {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  padding-right: 3rem;
+  font-size: 1.5rem;
   font-weight: 700;
+  margin-bottom: 15px;
+  color: white;
 }
 
 .detail-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.2rem;
-  margin-bottom: 1.5rem;
-  color: #b3b3b3;
+  gap: 15px;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
   align-items: center;
-  font-size: 0.95rem;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-}
-
-.meta-badge {
-  background: rgba(255, 255, 255, 0.12);
-  padding: 0.2rem 0.6rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #ffffff;
+  gap: 5px;
 }
 
 .detail-genres {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-bottom: 2rem;
-}
-
-.genre-tag {
-  background: rgba(229, 9, 20, 0.12);
-  color: #ff333d;
-  padding: 0.35rem 0.9rem;
-  border-radius: 9999px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  border: 1px solid rgba(229, 9, 20, 0.25);
+  gap: 8px;
+  color: var(--accent);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
 }
 
 .detail-plot {
-  margin-bottom: 1.5rem;
+  margin-bottom: 25px;
 }
 
-.detail-plot h3, .detail-cast h3 {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
+.detail-plot p {
+  color: var(--text-secondary);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 15px;
   color: white;
-  font-weight: 600;
 }
 
-.detail-plot p, .detail-cast p {
-  color: #a3a3a3;
-  line-height: 1.6;
-}
-
-.detail-cast {
-  margin-bottom: 2rem;
+.resource-pill {
+  display: inline-block;
+  padding: 10px 30px;
+  background-color: var(--bg-tertiary);
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: white;
+  margin-bottom: 25px;
 }
 
 .cast-list {
   display: flex;
-  gap: 1.2rem;
+  gap: 20px;
   overflow-x: auto;
-  padding-bottom: 0.8rem;
-  margin-top: 0.8rem;
+  padding-bottom: 10px;
 }
 
 .cast-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 85px;
-  flex: 0 0 auto;
+  width: 80px;
+  flex-shrink: 0;
 }
 
 .cast-avatar {
-  width: 75px;
-  height: 75px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
+  background: var(--bg-tertiary);
+  margin-bottom: 8px;
   overflow: hidden;
-  margin-bottom: 0.5rem;
-  background: #242424;
-  border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .cast-avatar img {
@@ -205,435 +165,56 @@
   object-fit: cover;
 }
 
-.cast-avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #fff;
-}
-
 .cast-name {
   font-size: 0.8rem;
   font-weight: 600;
   text-align: center;
-  margin-bottom: 0.2rem;
+  color: white;
   line-height: 1.2;
 }
 
 .cast-character {
-  font-size: 0.72rem;
-  color: #8c8c8c;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
   text-align: center;
-  line-height: 1.2;
-}
-
-.detail-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: auto;
-}
-
-.action-btn {
-  flex: 1;
-  transition: all 0.2s ease;
-  border-radius: 8px;
-  font-weight: 600;
-}
-
-.stream-btn {
-  background: #e50914;
-  color: white;
-  font-weight: 700;
-}
-
-.stream-btn:hover {
-  background: #ff0f1a;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(229, 9, 20, 0.5);
-}
-
-.btn-soon {
-  background-color: rgba(255, 193, 7, 0.1);
-  color: #ffc107;
-  border: 1px solid rgba(255, 193, 7, 0.3);
-}
-
-.save-action-btn.saved {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: rgba(225, 29, 72, 0.1);
-}
-
-.ratings-breakdown {
-  margin-top: 2rem;
-}
-
-.ratings-breakdown h3 {
-  font-size: 1.05rem;
-  margin-bottom: 0.8rem;
-  color: white;
-}
-
-.ratings-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-}
-
-.rating-badge {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-width: 110px;
-}
-
-.rating-source {
-  font-size: 0.72rem;
-  color: #8c8c8c;
-  margin-bottom: 0.2rem;
-}
-
-.rating-value {
-  font-weight: 600;
-  color: #ffffff;
 }
 
 .similar-movies-section {
-  padding: 0 3rem 3rem;
-}
-
-.similar-movies-section h3 {
-  font-size: 1.4rem;
-  margin-bottom: 1.2rem;
-  color: white;
+  padding: 0 4% 40px;
 }
 
 .similar-movies-scroll {
   display: flex;
-  gap: 1.2rem;
+  gap: 15px;
   overflow-x: auto;
-  padding-bottom: 1rem;
+  padding-bottom: 15px;
 }
 
 .similar-movie-item {
-  flex: 0 0 180px;
+  width: 140px;
+  flex-shrink: 0;
 }
 
-/* ========================================================
-   NETFLIX MOBILE NATIVE VIEW (Screens <= 768px)
-   ======================================================== */
-@media (max-width: 768px) {
-  .modal-overlay {
-    padding: 0;
-    background: #0a0a0a;
-    align-items: flex-start;
-  }
-  
-  .movie-details-modal {
-    width: 100vw;
-    max-width: 100vw;
-    height: 100vh;
-    max-height: 100vh;
-    border-radius: 0;
-    border: none;
-    background: #0a0a0a;
-    box-shadow: none;
-  }
-  
-  .close-btn {
-    top: 12px;
-    right: 12px;
-    width: 36px;
-    height: 36px;
-    background: rgba(0, 0, 0, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-  }
-
-  .movie-details-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .movie-poster-col {
-    position: relative;
-    width: 100%;
-    height: 260px;
-    overflow: hidden;
-    background: #000;
-  }
-
-  .movie-poster-col::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 140px;
-    background: linear-gradient(to top, #0a0a0a 10%, rgba(10, 10, 10, 0.8) 50%, transparent 100%);
-    z-index: 5;
-  }
-  
-  .detail-poster {
-    width: 100%;
-    height: 260px;
-    object-fit: cover;
-    object-position: center 20%;
-    border-radius: 0;
-  }
-
-  .trailer-container {
-    min-height: 240px;
-    height: 240px;
-  }
-  
-  .movie-info-col {
-    padding: 1rem 1.2rem 2rem 1.2rem;
-  }
-
-  .detail-title {
-    font-size: 1.7rem;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    margin-bottom: 0.6rem;
-    padding-right: 2rem;
-    color: #ffffff;
-  }
-
-  .detail-meta {
-    gap: 0.6rem;
-    font-size: 0.85rem;
-    margin-bottom: 1rem;
-  }
-
-  .meta-badge {
-    font-size: 0.75rem;
-    padding: 0.15rem 0.45rem;
-  }
-
-  .detail-genres {
-    gap: 0.4rem;
-    margin-bottom: 1.2rem;
-  }
-
-  .genre-tag {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.75rem;
-    background: rgba(255, 255, 255, 0.08);
-    color: #e0e0e0;
-    border-color: rgba(255, 255, 255, 0.15);
-  }
-
-  /* Big Netflix Red Stream Button */
-  .detail-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .stream-btn {
-    width: 100%;
-    padding: 0.9rem;
-    font-size: 1.1rem;
-    font-weight: 700;
-    background: #e50914;
-    color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
-    letter-spacing: 0.3px;
-  }
-
-  .action-btn:not(.stream-btn) {
-    font-size: 0.9rem;
-    padding: 0.7rem;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-  }
-
-  .detail-plot {
-    margin-bottom: 1.2rem;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 0.9rem;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-  }
-
-  .detail-plot h3 {
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #8c8c8c;
-    margin-bottom: 0.4rem;
-  }
-
-  .detail-plot p {
-    font-size: 0.9rem;
-    color: #d1d1d1;
-    line-height: 1.5;
-  }
-
-  .detail-cast {
-    margin-bottom: 1.5rem;
-  }
-
-  .cast-avatar {
-    width: 64px;
-    height: 64px;
-  }
-
-  .ratings-breakdown {
-    margin-top: 1rem;
-  }
-
-  .similar-movies-section {
-    padding: 0 1.2rem 4rem 1.2rem;
-  }
-
-  .similar-movies-section h3 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 0.8rem;
-  }
-
-  .similar-movie-item {
-    flex: 0 0 130px;
-  }
-}
-
-/* ========================================================
-   MULTI-SERVER STREAMING PLAYER MODAL
-   ======================================================== */
-.stream-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.98);
-  z-index: 10000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.stream-modal-content {
-  width: 95%;
-  height: 90%;
-  position: relative;
-  background: #0d0d0d;
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.95);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.stream-header-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.8rem 1.2rem;
-  background: #141414;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
+/* Server Selector Pill for Streaming */
 .server-tabs {
+  position: absolute;
+  top: 15px;
+  right: 15px;
   display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-}
-
-.server-label {
-  color: #b3b3b3;
-  font-size: 0.85rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-right: 0.4rem;
+  gap: 5px;
+  z-index: 20;
 }
 
 .server-tab {
-  background: rgba(255, 255, 255, 0.08);
-  color: #cccccc;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 0.4rem 0.85rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.server-tab:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-}
-
-.server-tab.active {
-  background: #e50914;
-  color: #ffffff;
-  border-color: #e50914;
-  font-weight: 700;
-  box-shadow: 0 0 12px rgba(229, 9, 20, 0.6);
-}
-
-.close-stream-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
+  background: rgba(0,0,0,0.5);
   color: white;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s ease;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  backdrop-filter: blur(5px);
 }
-
-.close-stream-btn:hover {
-  background: #e50914;
-}
-
-.stream-iframe {
-  width: 100%;
-  height: 100%;
-  flex: 1;
-  border: none;
-}
-
-@media (max-width: 768px) {
-  .stream-modal-content {
-    width: 100vw;
-    height: 100vh;
-    border-radius: 0;
-    border: none;
-  }
-
-  .stream-header-bar {
-    padding: 0.6rem 0.8rem;
-  }
-
-  .server-tabs {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 0.2rem;
-  }
-
-  .server-tab {
-    white-space: nowrap;
-    font-size: 0.75rem;
-    padding: 0.35rem 0.7rem;
-  }
+.server-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
 }

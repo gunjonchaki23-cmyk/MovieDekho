@@ -1,4 +1,4 @@
-import { Home, Flame, Search, Heart } from 'lucide-react';
+import { Home, Search, Download, User } from 'lucide-react';
 import './MobileNav.css';
 
 const MobileNav = ({ activeTab, onTabChange, savedCount }) => {
@@ -8,35 +8,35 @@ const MobileNav = ({ activeTab, onTabChange, savedCount }) => {
         className={`mobile-nav-item ${activeTab === 'home' ? 'active' : ''}`}
         onClick={() => onTabChange('home')}
       >
-        <Home size={22} />
+        <Home size={24} />
         <span>Home</span>
-      </button>
-
-      <button 
-        className={`mobile-nav-item ${activeTab === 'trending' ? 'active' : ''}`}
-        onClick={() => onTabChange('trending')}
-      >
-        <Flame size={22} />
-        <span>Trending</span>
       </button>
 
       <button 
         className={`mobile-nav-item ${activeTab === 'search' ? 'active' : ''}`}
         onClick={() => onTabChange('search')}
       >
-        <Search size={22} />
+        <Search size={24} />
         <span>Search</span>
       </button>
 
       <button 
-        className={`mobile-nav-item ${activeTab === 'watchlist' ? 'active' : ''}`}
-        onClick={() => onTabChange('watchlist')}
+        className={`mobile-nav-item ${activeTab === 'downloads' ? 'active' : ''}`}
+        onClick={() => onTabChange('downloads')}
       >
         <div className="nav-icon-wrapper">
-          <Heart size={22} />
+          <Download size={24} />
           {savedCount > 0 && <span className="saved-badge">{savedCount}</span>}
         </div>
-        <span>My List</span>
+        <span>Downloads</span>
+      </button>
+
+      <button 
+        className={`mobile-nav-item ${activeTab === 'profile' ? 'active' : ''}`}
+        onClick={() => onTabChange('profile')}
+      >
+        <User size={24} />
+        <span>Profile</span>
       </button>
     </div>
   );

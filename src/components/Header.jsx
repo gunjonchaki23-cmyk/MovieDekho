@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Film, Heart } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import SearchBar from './SearchBar';
 import './Header.css';
 
-const Header = ({ currentView, setCurrentView, onSearch }) => {
+const Header = ({ activeCategory, setActiveCategory, onSearch }) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const categories = ['All', 'Movies', 'TV Shows', 'Animations', 'Live Tv'];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,29 +22,26 @@ const Header = ({ currentView, setCurrentView, onSearch }) => {
 
   return (
     <header className={`header ${isScrolled ? 'scrolled' : ''}`}>
-      <div className="container header-content">
+      <div className="container header-top">
         <a href="/" className="logo-link">
-          <Film className="logo-icon" size={32} />
-          <span className="logo-text">Movie<span className="text-accent">Dekho</span></span>
+          <span className="logo-text"><span className="text-accent">N</span>etMovie</span>
         </a>
-        <nav className="nav-links">
-          <button 
-            className={`nav-link ${currentView === 'home' ? 'active' : ''}`}
-            onClick={() => setCurrentView('home')}
-          >
-            Home
-          </button>
-          <button 
-            className={`nav-link ${currentView === 'watchlist' ? 'active' : ''}`}
-            onClick={() => setCurrentView('watchlist')}
-          >
-            Watchlist
-          </button>
-        </nav>
-        
         <div className="header-right">
           <SearchBar onSearch={onSearch} isHeader={true} />
+          <Settings className="settings-icon" size={24} style={{marginLeft: '15px'}} />
         </div>
+      </div>
+      
+      <div className="category-pills-container">
+        {categories.map(cat => (
+          <button
+            key={cat}
+            className={`category-pill ${activeCategory === cat ? 'active' : ''}`}
+            onClick={() => setActiveCategory(cat)}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
     </header>
   );
