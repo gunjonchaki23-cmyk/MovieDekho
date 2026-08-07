@@ -59,9 +59,13 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
     if (activeServer === 'server1') {
       return `https://vidlink.pro/${typeEndpoint}/${movie.imdbID}?primaryColor=e50914&secondaryColor=141414&iconColor=e50914`;
     } else if (activeServer === 'server2') {
+      return `https://embed.su/embed/${typeEndpoint}/${movie.imdbID}`;
+    } else if (activeServer === 'server3') {
       return `https://player.autoembed.cc/embed/${typeEndpoint}/${movie.imdbID}`;
+    } else if (activeServer === 'server4') {
+      return `https://vidsrc.to/embed/${typeEndpoint}/${movie.imdbID}`;
     } else {
-      return `https://vidsrc.me/embed/${typeEndpoint}?tmdb=${movie.imdbID}`;
+      return `https://www.2embed.cc/embed/${movie.imdbID}`;
     }
   };
 
@@ -154,7 +158,7 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
 
               <div className="detail-actions">
                 <button className="btn btn-primary action-btn stream-btn" onClick={() => setShowStream(true)}>
-                  <Play size={20} fill="currentColor" /> Stream Now
+                  <Play size={20} fill="currentColor" /> Stream Full Movie
                 </button>
                 <button className="btn btn-outline action-btn" onClick={handleWatch}>
                   <Tv size={20} /> Trailer
@@ -226,19 +230,31 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
                   className={`server-tab ${activeServer === 'server1' ? 'active' : ''}`}
                   onClick={() => setActiveServer('server1')}
                 >
-                  Server 1 (Fast HD / Multi-Audio)
+                  Server 1 (VidLink Pro / Dual Audio)
                 </button>
                 <button 
                   className={`server-tab ${activeServer === 'server2' ? 'active' : ''}`}
                   onClick={() => setActiveServer('server2')}
                 >
-                  Server 2 (AutoEmbed)
+                  Server 2 (EmbedSu 1080p)
                 </button>
                 <button 
                   className={`server-tab ${activeServer === 'server3' ? 'active' : ''}`}
                   onClick={() => setActiveServer('server3')}
                 >
-                  Server 3 (Vidsrc)
+                  Server 3 (AutoEmbed)
+                </button>
+                <button 
+                  className={`server-tab ${activeServer === 'server4' ? 'active' : ''}`}
+                  onClick={() => setActiveServer('server4')}
+                >
+                  Server 4 (Vidsrc.to)
+                </button>
+                <button 
+                  className={`server-tab ${activeServer === 'server5' ? 'active' : ''}`}
+                  onClick={() => setActiveServer('server5')}
+                >
+                  Server 5 (2Embed)
                 </button>
               </div>
               <button className="close-stream-btn" onClick={() => setShowStream(false)}>
@@ -249,6 +265,7 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
               src={getServerUrl()}
               allowFullScreen
               frameBorder="0"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
               className="stream-iframe"
             ></iframe>
           </div>
