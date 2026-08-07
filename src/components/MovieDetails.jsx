@@ -13,7 +13,6 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   const [loading, setLoading] = useState(true);
   const [showSoonMsg, setShowSoonMsg] = useState(false);
   
-  const [activeServer, setActiveServer] = useState('server1');
   const [showGateway, setShowGateway] = useState(false);
   const [currentDownloadUrl, setCurrentDownloadUrl] = useState('');
 
@@ -49,11 +48,8 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
 
   const typeEndpoint = movie.Type === 'series' ? 'tv' : 'movie';
   
-  const getServerUrl = () => {
-    if (activeServer === 'server1') return `https://vidlink.pro/${typeEndpoint}/${movie.imdbID}?primaryColor=5C67FA&secondaryColor=171E2D&iconColor=5C67FA&autoplay=false`;
-    if (activeServer === 'server2') return `https://player.autoembed.cc/embed/${typeEndpoint}/${movie.imdbID}`;
-    return `https://vidsrc.pm/embed/${typeEndpoint}/${movie.imdbID}`;
-  };
+  const streamUrl = `https://api.codespecters.com/embed/${typeEndpoint}/${movie.imdbID}?apikey=nx_8815a43efad9d360be0fe48136f18327`;
+
 
   return (
     <div className="modal-overlay animate-fade-in">
@@ -68,24 +64,12 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
           <div className="movie-details-grid">
             
             <div className="movie-poster-col">
-              <div className="server-tabs">
-                <button 
-                  className={`server-tab ${activeServer === 'server1' ? 'active' : ''}`}
-                  onClick={() => setActiveServer('server1')}
-                >Server 1</button>
-                <button 
-                  className={`server-tab ${activeServer === 'server2' ? 'active' : ''}`}
-                  onClick={() => setActiveServer('server2')}
-                >Server 2</button>
-                <button 
-                  className={`server-tab ${activeServer === 'server3' ? 'active' : ''}`}
-                  onClick={() => setActiveServer('server3')}
-                >Server 3</button>
-              </div>
-
               <iframe 
-                src={getServerUrl()}
-                allowFullScreen
+                src={streamUrl}
+                allowFullScreen={true}
+                webkitallowfullscreen="true"
+                mozallowfullscreen="true"
+                allow="autoplay; fullscreen"
                 frameBorder="0"
                 className="stream-iframe"
               ></iframe>
