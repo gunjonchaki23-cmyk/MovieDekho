@@ -13,15 +13,9 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   const [loading, setLoading] = useState(true);
   const [showSoonMsg, setShowSoonMsg] = useState(false);
   
-  // By default we try to show stream in this layout on top
-  const [activeServer, setActiveServer] = useState('native');
+  const [activeServer, setActiveServer] = useState('server1');
   const [showGateway, setShowGateway] = useState(false);
   const [currentDownloadUrl, setCurrentDownloadUrl] = useState('');
-  
-  // Custom Player States
-  const [directStreamUrl, setDirectStreamUrl] = useState(null);
-  const [streamError, setStreamError] = useState(false);
-  const [isPlayerLoading, setIsPlayerLoading] = useState(false);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -40,31 +34,7 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
     fetchDetails();
   }, [movie.imdbID]);
 
-  const tryFetchDirectStream = async () => {
-    setIsPlayerLoading(true);
-    setStreamError(false);
-    try {
-      const response = await fetch(`http://localhost:5000/api/stream?id=${movie.imdbID}&title=${encodeURIComponent(movie.Title)}`);
-      const data = await response.json();
-      
-      if (data.success && data.url) {
-        setDirectStreamUrl(data.url);
-      } else {
-        setDirectStreamUrl(null);
-        setStreamError(true);
-      }
-    } catch(e) {
-      setDirectStreamUrl(null);
-      setStreamError(true);
-    }
-    setIsPlayerLoading(false);
-  }
-
-  useEffect(() => {
-    if (activeServer === 'native') {
-      tryFetchDirectStream();
-    }
-  }, [activeServer, movie.imdbID, movie.Title]);
+  // Removed local scraper logic to ensure stable ad-free iframe streaming
 
   const handleDownload = async () => {
     const link = await getDownloadLink(movie.imdbID, movie.Type);
@@ -80,9 +50,9 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
   const typeEndpoint = movie.Type === 'series' ? 'tv' : 'movie';
   
   const getServerUrl = () => {
-    if (activeServer === 'server1') return `https://vidlink.pro/${typeEndpoint}/${movie.imdbID}?primaryColor=5C67FA&secondaryColor=171E2D&iconColor=5C67FA`;
-    if (activeServer === 'server2') return `https://vidsrc.pm/embed/${typeEndpoint}/${movie.imdbID}`;
-    return `https://player.autoembed.cc/embed/${typeEndpoint}/${movie.imdbID}`;
+    if (activeServer === 'server1') return `https://vidlink.pro/${typeEndpoint}/${movie.imdbID}?primaryColor=5C67FA&secondaryColor=171E2D&iconColor=5C67FA&autoplay=false`;
+    if (activeServer === 'server2') return `https://player.autoembed.cc/embed/${typeEndpoint}/${movie.imdbID}`;
+    return `https://vidsrc.pm/embed/${typeEndpoint}/${movie.imdbID}`;
   };
 
   return (
@@ -100,40 +70,26 @@ const MovieDetails = ({ movie, onClose, isSaved, onToggleSave, onSimilarSelect }
             <div className="movie-poster-col">
               <div className="server-tabs">
                 <button 
-                  className={`server-tab ${activeServer === 'native' ? 'active' : ''}`}
-                  onClick={() => setActiveServer('native')}
-                >Native</button>
-                <button 
                   className={`server-tab ${activeServer === 'server1' ? 'active' : ''}`}
                   onClick={() => setActiveServer('server1')}
-                >S1</button>
+                >Server 1</button>
                 <button 
                   className={`server-tab ${activeServer === 'server2' ? 'active' : ''}`}
                   onClick={() => setActiveServer('server2')}
-                >S2</button>
+                >Server 2</button>
+                <button 
+                  className={`server-tab ${activeServer === 'server3' ? 'active' : ''}`}
+                  onClick={() => setActiveServer('server3')}
+                >Server 3</button>
               </div>
 
-              {activeServer === 'native' ? (
-                <div style={{height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                  {isPlayerLoading ? (
-                    <div style={{color: 'white'}}>Scraping link...</div>
-                  ) : directStreamUrl ? (
-                    <CustomPlayer src={directStreamUrl} />
-                  ) : (
-                    <div style={{textAlign: 'center', color: '#aaa', padding: '20px'}}>
-                      <AlertCircle size={32} style={{margin: '0 auto 10px', color: '#5C67FA'}} />
-                      <p style={{fontSize: '0.85rem'}}>Direct Stream Unavailable.<br/>Switch to S1 or S2 to watch via iframe.</p>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <iframe 
-                  src={getServerUrl()}
-                  allowFullScreen
-                  frameBorder="0"
-                  className="stream-iframe"
-                ></iframe>
-              )}
+              <iframe 
+                src={getServerUrl()}
+                allowFullScreen
+                frameBorder="0"
+                className="stream-iframe"
+                sandbox="allow-scripts allow-same-origin allow-presentation"
+              ></iframe>
             </div>
             
             <div className="movie-info-col">
