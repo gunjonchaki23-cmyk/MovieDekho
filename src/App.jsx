@@ -7,6 +7,7 @@ import EmptyState from './components/EmptyState';
 import Carousel from './components/Carousel';
 import GenreFilter from './components/GenreFilter';
 import Billboard from './components/Billboard';
+import MobileNav from './components/MobileNav';
 import { searchMovies, getTrendingMovies, getRecentMovies, getTrendingSeries, getMoviesByGenre, getBollywoodMovies, getHollywoodMovies, getKoreanDramasHindiDubbed, getMoviesByIds } from './services/api';
 import { fetchDownloadLinks, fetchAvailableMoviesList } from './services/downloadLinks';
 import './App.css';
@@ -354,6 +355,24 @@ function App() {
           onSimilarSelect={(movie) => setSelectedMovie(movie)}
         />
       )}
+
+      <MobileNav 
+        activeTab={currentView} 
+        onTabChange={(tab) => {
+          if (tab === 'search') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) searchInput.focus();
+          } else if (tab === 'trending') {
+            setCurrentView('home');
+            window.scrollTo({ top: 500, behavior: 'smooth' });
+          } else {
+            setCurrentView(tab);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }} 
+        savedCount={watchlist.length} 
+      />
     </div>
   );
 }
